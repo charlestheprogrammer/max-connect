@@ -1,12 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
 import { Plus } from 'lucide-react'
 import { DateRange } from 'react-day-picker'
 
-import { cn } from '@/lib/utils'
+import { cn, formatTripDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -30,12 +28,6 @@ export function DatePickerWithRange({
   React.useEffect(() => {
     onChangeDate(date)
   }, [date, onChangeDate])
-
-  const formatToFr = React.useCallback((date: Date) => {
-    return format(date, 'dd LLL y', {
-      locale: fr,
-    })
-  }, [])
 
   return (
     <Popover>
@@ -63,7 +55,7 @@ export function DatePickerWithRange({
             {date?.from && (
               <div className="flex flex-col items-start">
                 <span className="text-muted-foreground">Aller</span>
-                <span className="text-sm">{formatToFr(date.from)}</span>
+                <span className="text-sm">{formatTripDate(date.from)}</span>
               </div>
             )}
           </Button>
@@ -84,7 +76,7 @@ export function DatePickerWithRange({
             {date?.to && (
               <div className="flex flex-col items-start">
                 <span className="text-muted-foreground">Retour</span>
-                <span className="text-sm">{formatToFr(date.to)}</span>
+                <span className="text-sm">{formatTripDate(date.to)}</span>
               </div>
             )}
           </Button>

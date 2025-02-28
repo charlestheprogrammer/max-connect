@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Nunito_Sans } from 'next/font/google'
 import '../globals.css'
-import { Suspense } from 'react'
 
 const nunitoSans = Nunito_Sans({
   variable: '--font-nunito-sans',
@@ -21,8 +20,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${nunitoSans.variable} antialiased`}>
-        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+      <body className={`${nunitoSans.variable} antialiased bg-[#F3F3F8]`}>
+        {children}
       </body>
     </html>
   )

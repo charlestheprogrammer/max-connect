@@ -2,10 +2,12 @@
 
 import React from 'react'
 import { useSearchParams } from 'next/navigation'
-import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { addDays, format, subDays } from 'date-fns'
+import Journey from './journey'
+import DateSelector from './date-selector'
+import { LoadingSpinner } from '../ui/loading-spinner'
 
-type AvailableJourney = {
+export type AvailableJourney = {
   train_no: string
   origine: string
   destination: string
@@ -52,12 +54,19 @@ type JourneysData = {
   results: AvailableJourney[]
 }
 
-const fetchSncfData = async (from: string | null, to: string | null) => {
+const fetchSncfData = async (
+  from: string | null,
+  to: string | null,
+  date: Date
+) => {
   if (!from || !to) {
     return { count: 0, journeys: [] }
   }
   const res = await fetch(
-    `https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets/tgvmax/records?select=train_no%2Corigine%2Cdestination%2Cdestination_iata%2Corigine_iata%2C%20date%2Cheure_depart%2Cheure_arrivee&where=od_happy_card%3D%27OUI%27%20AND%20origine_iata%3D%27${from}%27%20AND%20destination_iata%3D%27${to}%27&order_by=date%20asc%2C%20heure_depart%20asc&limit=10&offset=0&timezone=UTC&include_links=false&include_app_metas=false`
+    `https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets/tgvmax/records?select=train_no%2Corigine%2Cdestination%2Cdestination_iata%2Corigine_iata%2C%20date%2Cheure_depart%2Cheure_arrivee&where=od_happy_card%3D%27OUI%27%20AND%20origine_iata%3D%27${from}%27%20AND%20destination_iata%3D%27${to}%27%20AND%20date%3Ddate%27${format(
+      date,
+      'y-MM-dd'
+    )}%27&order_by=date%20asc%2C%20heure_depart%20asc&limit=10&offset=0&timezone=UTC&include_links=false&include_app_metas=false`
   )
   const data = await res.json()
   const { total_count: count, results: journeys }: JourneysData = data
@@ -71,39 +80,79 @@ export default function Journeys() {
   } | null>(null)
   const searchParams = useSearchParams()
 
+  const [journeysByDate, setJourneysByDate] = React.useState<
+    Map<string, AvailableJourney[]>
+  >(new Map())
+
+  const getSearchResults = async (date: Date) => {
+    setData(null)
+    const datesToResults = new Map<string, AvailableJourney[]>()
+    const daysToFetch = []
+    // Fetch previous 3 days and next 3 days
+    for (let i = -3; i < 4; i++) {
+      // If the date is in the past, skip it and fetch a day in the future
+      if (i < 0 && addDays(new Date(date), i) < new Date()) {
+        daysToFetch.push(format(addDays(date, 3 + Math.abs(i)), 'y-MM-dd'))
+        continue
+      }
+      if (i < 0) {
+        console.log(date, subDays(date, Math.abs(i)))
+        daysToFetch.push(format(subDays(date, Math.abs(i)), 'y-MM-dd'))
+      } else {
+        daysToFetch.push(format(addDays(date, i), 'y-MM-dd'))
+      }
+    }
+    for (const day of daysToFetch.sort((a, b) => a.localeCompare(b))) {
+      const data = await fetchSncfData(
+        searchParams.get('from'),
+        searchParams.get('to'),
+        new Date(day)
+      ).catch(() => null)
+      if (data) {
+        datesToResults.set(day, data.journeys)
+      }
+    }
+    setJourneysByDate(datesToResults)
+    setData({
+      count: datesToResults.get(format(date, 'y-MM-dd'))?.length || 0,
+      journeys: datesToResults.get(format(date, 'y-MM-dd')) || [],
+    })
+    setActiveDate(format(new Date(date), 'y-MM-dd'))
+  }
+
   React.useEffect(() => {
-    fetchSncfData(searchParams.get('from'), searchParams.get('to')).then(
-      (data) => setData(data)
-    )
+    if (searchParams.get('fromDate')) {
+      getSearchResults(new Date(searchParams.get('fromDate') as string))
+    }
   }, [searchParams])
+
+  const [activeDate, setActiveDate] = React.useState<string | null>(null)
 
   return (
     <div>
-      <h1>Available journeys</h1>
+      {journeysByDate.size > 0 && (
+        <DateSelector
+          journeysByDate={journeysByDate}
+          activeDate={activeDate}
+          setActiveDate={setActiveDate}
+          setData={setData}
+        />
+      )}
       {data ? (
-        <ul>
+        <div className="flex flex-col gap-2">
           {data.journeys?.map((journey) => (
-            <li key={journey.date + journey.train_no}>
-              <h2>{journey.train_no}</h2>
-              <p>
-                {journey.origine} ({journey.origine_iata}) -{' '}
-                {journey.destination} ({journey.destination_iata})
-              </p>
-              <p>
-                {journey.date.toISOString().split('T')[0]}{' '}
-                {format(journey.heure_depart, 'HH:mm', {
-                  locale: fr,
-                })}{' '}
-                -{' '}
-                {format(journey.heure_arrivee, 'HH:mm', {
-                  locale: fr,
-                })}
-              </p>
-            </li>
+            <Journey key={journey.train_no + journey.date} journey={journey} />
           ))}
-        </ul>
+          {data.journeys.length === 0 && (
+            <p className="text-center text-muted-foreground">
+              Aucun train disponible
+            </p>
+          )}
+        </div>
       ) : (
-        <p>Loading...</p>
+        <p className="flex justify-center w-full">
+          <LoadingSpinner size={100} color="#14708a" />
+        </p>
       )}
     </div>
   )

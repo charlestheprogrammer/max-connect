@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { useSearchContext } from '@/context/search'
 
 export function SearchBar({
   trainStations,
@@ -20,9 +21,7 @@ export function SearchBar({
   className?: string
 }) {
   const [from, setFrom] = React.useState('')
-  const [fromStation, setFromStation] = React.useState<TrainStation | null>(
-    null
-  )
+  const [fromStation, setFromStation] = React.useState<TrainStation | null>(null)
   const [to, setTo] = React.useState('')
   const [toStation, setToStation] = React.useState<TrainStation | null>(null)
   const [date, setDate] = React.useState<DateRange | undefined>({
@@ -30,8 +29,10 @@ export function SearchBar({
     to: undefined,
   })
 
+  const { setSearch } = useSearchContext()
+
   const formatToFr = React.useCallback((date: Date) => {
-    return format(date, 'MM-dd-y', {
+    return format(date, 'y-MM-dd', {
       locale: fr,
     })
   }, [])
@@ -39,16 +40,17 @@ export function SearchBar({
   const router = useRouter()
 
   const onSubmit = () => {
-    console.log({
-      fromStation,
-      toStation,
-      date,
-    })
     if (!fromStation || !toStation || !date?.from) {
       console.log('missing fields')
-
       return
     }
+
+    setSearch(
+      fromStation.iata,
+      toStation.iata,
+      date.from,
+      date.to
+    )
 
     const toDate = date?.to ? `&toDate=${formatToFr(date.to)}` : ''
 
