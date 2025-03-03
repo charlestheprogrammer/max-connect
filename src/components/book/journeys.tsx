@@ -18,40 +18,17 @@ export type AvailableJourney = {
   heure_arrivee: Date
 }
 
-const loadAvailableJourneys = (data: AvailableJourney[]) => {
-  return data?.map((journey: AvailableJourney) => ({
-    train_no: journey.train_no,
-    origine: journey.origine,
-    destination: journey.destination,
-    destination_iata: journey.destination_iata,
-    origine_iata: journey.origine_iata,
-    date: new Date(journey.date),
-    heure_depart: new Date(
-      new Date(journey.date).setHours(
-        parseInt(journey.heure_depart.toString().split(':')[0]),
-        parseInt(
-          journey.heure_depart.toString().split(':')[
-            journey.heure_depart.toString().split(':').length - 1
-          ]
-        )
-      )
-    ),
-    heure_arrivee: new Date(
-      new Date(journey.date).setHours(
-        parseInt(journey.heure_arrivee.toString().split(':')[0]),
-        parseInt(
-          journey.heure_arrivee.toString().split(':')[
-            journey.heure_arrivee.toString().split(':').length - 1
-          ]
-        )
-      )
-    ),
-  }))
-}
-
-type JourneysData = {
-  total_count: number
-  results: AvailableJourney[]
+const parseLocalResults = (data: {
+  canGo: boolean
+  min_depth: number
+  posibilities?: {
+    destination_iata: string
+    heure_arrivee: string
+    depth: number
+    history: AvailableJourney[]
+  }[]
+}) => {
+  return data.posibilities?.map((record) => record.history) || []
 }
 
 const fetchSncfData = async (
@@ -62,31 +39,41 @@ const fetchSncfData = async (
   if (!from || !to) {
     return { count: 0, journeys: [] }
   }
-  const res = await fetch(
-    `https://ressources.data.sncf.com/api/explore/v2.1/catalog/datasets/tgvmax/records?select=train_no%2Corigine%2Cdestination%2Cdestination_iata%2Corigine_iata%2C%20date%2Cheure_depart%2Cheure_arrivee&where=od_happy_card%3D%27OUI%27%20AND%20origine_iata%3D%27${from}%27%20AND%20destination_iata%3D%27${to}%27%20AND%20date%3Ddate%27${format(
-      date,
-      'y-MM-dd'
-    )}%27&order_by=date%20asc%2C%20heure_depart%20asc&limit=10&offset=0&timezone=UTC&include_links=false&include_app_metas=false`
+
+  const localRes = await fetch(
+    `/api/journeys?from=${from}&to=${to}&date=${format(date, 'y-MM-dd')}`
   )
-  const data = await res.json()
-  const { total_count: count, results: journeys }: JourneysData = data
-  return { count, journeys: loadAvailableJourneys(journeys) }
+  const localData = (await localRes.json()) as {
+    canGo: boolean
+    min_depth: number
+    posibilities: {
+      destination_iata: string
+      heure_arrivee: string
+      depth: number
+      history: AvailableJourney[]
+    }[]
+  }
+
+  return {
+    count: localData.posibilities?.length || 0,
+    journeys: parseLocalResults(localData),
+  }
 }
 
 export default function Journeys() {
   const [data, setData] = React.useState<{
     count: number
-    journeys: AvailableJourney[]
+    journeys: AvailableJourney[][]
   } | null>(null)
   const searchParams = useSearchParams()
 
   const [journeysByDate, setJourneysByDate] = React.useState<
-    Map<string, AvailableJourney[]>
+    Map<string, AvailableJourney[][]>
   >(new Map())
 
   const getSearchResults = async (date: Date) => {
     setData(null)
-    const datesToResults = new Map<string, AvailableJourney[]>()
+    const datesToResults = new Map<string, AvailableJourney[][]>()
     const daysToFetch = []
     // Fetch previous 3 days and next 3 days
     for (let i = -3; i < 4; i++) {
@@ -140,8 +127,20 @@ export default function Journeys() {
       )}
       {data ? (
         <div className="flex flex-col gap-2">
-          {data.journeys?.map((journey) => (
-            <Journey key={journey.train_no + journey.date} journey={journey} />
+          {data.journeys?.map((journey, index) => (
+            <Journey
+              key={
+                journey
+                  .map(
+                    (journey) =>
+                      `${journey.train_no}${journey.origine_iata}${journey.destination_iata}`
+                  )
+                  .join('') +
+                journey[0].date +
+                index
+              }
+              journey={journey}
+            />
           ))}
           {data.journeys.length === 0 && (
             <p className="text-center text-muted-foreground">
