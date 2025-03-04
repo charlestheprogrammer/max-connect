@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react'
 import { Label } from '@/components/ui/label'
-import TrainStation from '@/api/models/train-station'
+import TrainStation from '@/app/api/models/train-station'
 import { ScrollArea } from '../ui/scroll-area'
 import { Separator } from '../ui/separator'
 

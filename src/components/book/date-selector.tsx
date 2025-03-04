@@ -10,10 +10,10 @@ export default function DateSelector({
   setActiveDate,
   setData,
 }: {
-  journeysByDate: Map<string, AvailableJourney[]>
+  journeysByDate: Map<string, AvailableJourney[][]>
   activeDate: string | null
   setActiveDate: (date: string) => void
-  setData: (data: { count: number; journeys: AvailableJourney[] }) => void
+  setData: (data: { count: number; journeys: AvailableJourney[][] }) => void
 }) {
   const scrollView = React.useRef<HTMLDivElement>(null)
 
@@ -35,7 +35,10 @@ export default function DateSelector({
   }, [activeDate])
 
   return (
-    <div className="flex flex-row gap-2 mb-10 overflow-x-auto no-scrollbar" ref={scrollView}>
+    <div
+      className="flex flex-row gap-2 mb-10 overflow-x-auto no-scrollbar"
+      ref={scrollView}
+    >
       {Array.from(journeysByDate.keys())
         .sort()
         .map((date) => (
@@ -61,8 +64,8 @@ export default function DateSelector({
                   {journeysByDate.get(date)?.length || 0}
                 </span>
                 {(journeysByDate.get(date)?.length || 0) > 1
-                  ? ' trains'
-                  : ' train'}
+                  ? ' options'
+                  : ' option'}
               </p>
             }
           </button>
