@@ -2,8 +2,8 @@ import mongoose from 'mongoose'
 
 const journeySchema = new mongoose.Schema({
   train_no: String,
-  origine: String,
-  destination: String,
+  origine: { type: String, index: true },
+  destination: { type: String, index: true },
   destination_iata: { type: String, index: true },
   origine_iata: { type: String, index: true },
   date: Date,
