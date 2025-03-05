@@ -1,3 +1,4 @@
+import { AvailableJourney } from '@/components/book/journeys'
 import mongoose from 'mongoose'
 
 const highlightTripSchema = new mongoose.Schema({
@@ -16,6 +17,18 @@ const highlightTripSchema = new mongoose.Schema({
     ],
   ],
 })
+
+type HighlightTrip = {
+  origine: string
+  destination: string
+  from: Date
+  to: Date
+  destination_iata: string
+  origine_iata: string
+  trips: mongoose.Types.ObjectId[][] | AvailableJourney[][]
+
+  toObject?: () => HighlightTrip
+}
 
 const HighlightTrip =
   mongoose.models.HighlightTrip ||

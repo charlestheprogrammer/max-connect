@@ -12,6 +12,7 @@ type HighlightTrip = {
   trips: string[][]
   destination_iata: string
   origine_iata: string
+  _id: string
 }
 
 export default function Trips({
@@ -48,6 +49,7 @@ export default function Trips({
             price={0}
             imageSrc={`/city/${trip.destination_iata.toLowerCase()}.jpg`}
             alt={trip.destination}
+            _id={trip._id}
           />
         ))}
       </div>
