@@ -11,6 +11,17 @@ const journeySchema = new mongoose.Schema({
   heure_arrivee: Date,
 })
 
+type Journey = {
+  train_no: string
+  origine: string
+  destination: string
+  destination_iata: string
+  origine_iata: string
+  date: Date
+  heure_depart: Date
+  heure_arrivee: Date
+}
+
 const Journey =
   mongoose.models.Journey || mongoose.model('Journey', journeySchema)
 

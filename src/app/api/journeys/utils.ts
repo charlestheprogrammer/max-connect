@@ -105,9 +105,10 @@ export const canGoFromTo = async (
   from: string,
   to: string,
   date: Date,
-  start = new Date()
+  start = new Date(),
+  fetcher = fetchFromTrainStation
 ) => {
-  const destinations = await destinationsFrom(date, start, from)
+  const destinations = await destinationsFrom(date, start, from, fetcher)
 
   const results = destinations
     .filter((destination) => destination.destination_iata === to)

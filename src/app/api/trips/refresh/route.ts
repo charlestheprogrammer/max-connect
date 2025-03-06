@@ -3,6 +3,7 @@ import HighlightTrip from '../../models/highlight-hourney'
 import { connect } from '@/utils/server/mongoose'
 import { mongo } from 'mongoose'
 import { canGoFromTo } from '../../journeys/utils'
+import Journey from '../../models/journey'
 
 const interestingDestinations = [
   'FRNIC',
@@ -21,14 +22,43 @@ const interestingDestinations = [
 
 const parisStations = ['FRPST', 'FRPNO', 'FRPLY', 'FRPMO']
 
+const journeys: Journey[] = []
+
+const fetchFromTrainStation = async (
+  iata: string,
+  date: Date,
+  start = new Date()
+) => {
+  const dateJustBeforeMidnight = new Date(date)
+  dateJustBeforeMidnight.setDate(date.getDate() + 1)
+
+  const res = journeys.filter(
+    (journey) =>
+      journey.origine_iata === iata &&
+      journey.date >= date &&
+      journey.date < dateJustBeforeMidnight &&
+      journey.heure_depart >= start
+  )
+  return res
+}
+
 export async function GET() {
   await connect()
   const trips = []
+  journeys.push(...(await Journey.find({})))
+  const todayAtMidnight = new Date()
+  todayAtMidnight.setHours(0, 0)
   for (const destination of interestingDestinations) {
     for (const parisStation of parisStations) {
       trips.push(
         new Promise((resolve) => {
-          canGoFromTo(parisStation, destination, new Date()).then((result) => {
+          canGoFromTo(
+            parisStation,
+            destination,
+            new Date(),
+            todayAtMidnight,
+            fetchFromTrainStation
+          ).then((result) => {
             if (result.canGo) {
               HighlightTrip.insertOne({
                 origine: result.posibilities![0].history[0].origine,
