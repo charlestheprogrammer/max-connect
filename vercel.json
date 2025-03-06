@@ -1,8 +1,12 @@
 {
   "crons": [
     {
-      "path": "/api/cron",
+      "path": "/api/refresh-journeys",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/trips/refresh",
+      "schedule": "30 5 * * *"
     }
   ]
 }

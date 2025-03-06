@@ -1,9 +1,9 @@
-import { MoveLeft, MoveRight } from 'lucide-react'
 import { SearchBar } from '@/components/search-bar'
 import { createClient } from '@/utils/server/supabase'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import CurrentOffer from '@/components/home/current-offer'
+import React from 'react'
+import Trips from '@/components/home/trips'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -37,84 +37,11 @@ export default async function Home() {
             </h1>
             <p>Exploitez au maximum votre abonnement.</p>
           </div>
-          <Button className="hidden sm:block px-12 py-2 h-12 rounded-full font-bold">Je fonce</Button>
+          <Button className="hidden sm:block px-12 py-2 h-12 rounded-full font-bold">
+            Je fonce
+          </Button>
         </div>
-        <div className="py-14">
-          <div className="overflow-x-auto w-full flex flex-row gap-4">
-            <CurrentOffer
-              imageSrc="/toulouse.png"
-              alt="train"
-              from="Paris"
-              to="Toulouse"
-              price={0}
-            />
-            <CurrentOffer
-              imageSrc="/toulouse.png"
-              alt="train"
-              from="Paris"
-              to="Lyon"
-              price={0}
-            />
-            <CurrentOffer
-              imageSrc="/toulouse.png"
-              alt="train"
-              from="Paris"
-              to="Marseille"
-              price={0}
-            />
-            <CurrentOffer
-              imageSrc="/toulouse.png"
-              alt="train"
-              from="Paris"
-              to="Bordeaux"
-              price={0}
-            />
-            <CurrentOffer
-              imageSrc="/toulouse.png"
-              alt="train"
-              from="Paris"
-              to="Bordeaux"
-              price={0}
-            />
-            <CurrentOffer
-              imageSrc="/toulouse.png"
-              alt="train"
-              from="Paris"
-              to="Bordeaux"
-              price={0}
-            />
-            <CurrentOffer
-              imageSrc="/toulouse.png"
-              alt="train"
-              from="Paris"
-              to="Bordeaux"
-              price={0}
-            />
-            <CurrentOffer
-              imageSrc="/toulouse.png"
-              alt="train"
-              from="Paris"
-              to="Bordeaux"
-              price={0}
-            />
-          </div>
-          <div className="flex flex-row justify-end mt-14 gap-2">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-12 w-12 border border-[#0C131F] rounded-full"
-            >
-              <MoveLeft color="#0C131F" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-12 w-12 border border-[#0C131F] rounded-full"
-            >
-              <MoveRight color="#0C131F" />
-            </Button>
-          </div>
-        </div>
+        <Trips trainStations={data} />
       </div>
     </div>
   )
