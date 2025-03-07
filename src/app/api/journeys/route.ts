@@ -24,7 +24,10 @@ async function handler(req: NextRequest) {
     )
   }
 
-  const result = await canGoFromTo(from, to, new Date(date))
+  const start = new Date(date)
+  start.setHours(0, 0, 0, 0)
+
+  const result = await canGoFromTo(from, to, new Date(date), start)
   return NextResponse.json(result, {
     status: 200,
   })

@@ -30,9 +30,14 @@ export default function Trips({
       })
   }, [])
 
+  const swiperRef = React.useRef<HTMLDivElement>(null)
+
   return (
     <div className="py-14">
-      <div className="overflow-x-auto w-full flex flex-row gap-4">
+      <div
+        className="overflow-x-auto w-full flex flex-row gap-4 no-scrollbar"
+        ref={swiperRef}
+      >
         {trips.map((trip, index) => (
           <CurrentOffer
             key={index}
@@ -58,6 +63,12 @@ export default function Trips({
           size="icon"
           variant="ghost"
           className="h-12 w-12 border border-[#0C131F] rounded-full"
+          onClick={() => {
+            swiperRef.current?.scrollBy({
+              left: -240,
+              behavior: 'smooth',
+            })
+          }}
         >
           <MoveLeft color="#0C131F" />
         </Button>
@@ -65,6 +76,12 @@ export default function Trips({
           size="icon"
           variant="ghost"
           className="h-12 w-12 border border-[#0C131F] rounded-full"
+          onClick={() => {
+            swiperRef.current?.scrollBy({
+              left: 240,
+              behavior: 'smooth',
+            })
+          }}
         >
           <MoveRight color="#0C131F" />
         </Button>
