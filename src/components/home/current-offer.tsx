@@ -21,7 +21,7 @@ export default function CurrentOffer({
     <Link href={`/trips/${_id}`}>
       <div className="bg-white p-1 w-[220px] shrink-0 rounded-lg overflow-hidden">
         <div className="h-[160px] w-[calc(220px-.5rem)] rounded-t-sm overflow-hidden relative">
-          <Image src={imageSrc} alt={alt} layout={'fill'} objectFit={'cover'} />
+          <Image src={imageSrc} alt={alt} layout={'fill'} className='object-cover' />
         </div>
         <div className="px-4 mt-5">
           <div className="h-[90px]">

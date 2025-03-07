@@ -22,7 +22,7 @@ const interestingDestinations = [
   'FRXGF',
 ]
 
-const parisStations = ['FRPST', 'FRPNO', 'FRPLY', 'FRPMO']
+const parisStations = ['PARIS (intramuros)']
 
 const journeys: Journey[] = []
 
@@ -36,7 +36,7 @@ const fetchFromTrainStation = async (
 
   const res = journeys.filter(
     (journey) =>
-      journey.origine_iata === iata &&
+      (journey.origine_iata === iata || journey.origine === iata) &&
       journey.date >= date &&
       journey.date < dateJustBeforeMidnight &&
       journey.heure_depart >= start
@@ -44,12 +44,27 @@ const fetchFromTrainStation = async (
   return res
 }
 
+const getNextWeekendRange = () => {
+  const today = new Date()
+  const day = today.getDay()
+  const diff = 5 - day
+  const nextFriday = new Date(today)
+  nextFriday.setDate(today.getDate() + diff)
+  nextFriday.setHours(0, 0, 0, 0)
+  const nextSunday = new Date(nextFriday)
+  nextSunday.setDate(nextFriday.getDate() + 2)
+  nextSunday.setHours(23, 59, 59, 999)
+  return { from: nextFriday, to: nextSunday }
+}
+
 export async function GET() {
   await connect()
   const trips = []
   journeys.push(...(await Journey.find({})))
-  const todayAtMidnight = new Date()
-  todayAtMidnight.setHours(0, 0)
+  await HighlightTrip.deleteMany({})
+  const { from, to } = getNextWeekendRange()
+  const fromAtMidnight = new Date(from)
+  fromAtMidnight.setHours(0, 0)
   for (const destination of interestingDestinations) {
     for (const parisStation of parisStations) {
       trips.push(
@@ -57,29 +72,45 @@ export async function GET() {
           canGoFromTo(
             parisStation,
             destination,
-            new Date(),
-            todayAtMidnight,
+            from,
+            fromAtMidnight,
             fetchFromTrainStation
-          ).then((result) => {
-            if (result.canGo) {
-              HighlightTrip.insertOne({
-                origine: result.posibilities![0].history[0].origine,
-                destination:
-                  result.posibilities![0].history[
-                    result.posibilities![0].history.length - 1
-                  ].destination,
-                from: new Date(),
-                to: new Date().setDate(new Date().getDate() + 1),
-                origine_iata: parisStation,
-                destination_iata: destination,
-                trips:
-                  result.posibilities?.map((record) =>
-                    record.history.map(
-                      (journey) => new mongo.ObjectId(journey._id)
-                    )
-                  ) || [],
-              }).then(() => {
-                resolve(true)
+          ).then((result_from) => {
+            if (result_from.canGo) {
+              canGoFromTo(
+                destination,
+                parisStation,
+                to,
+                to,
+                fetchFromTrainStation
+              ).then((result_to) => {
+                if (result_to.canGo) {
+                  HighlightTrip.insertOne({
+                    origine: parisStation,
+                    destination,
+                    from,
+                    to,
+                    origine_iata:
+                      result_from.posibilities![0].history[0].origine_iata,
+                    destination_iata: destination,
+                    results_to:
+                      result_to.posibilities?.map((record) =>
+                        record.history.map(
+                          (journey) => new mongo.ObjectId(journey._id)
+                        )
+                      ) || [],
+                    results_from:
+                      result_from.posibilities?.map((record) =>
+                        record.history.map(
+                          (journey) => new mongo.ObjectId(journey._id)
+                        )
+                      ) || [],
+                  }).then(() => {
+                    resolve(true)
+                  })
+                } else {
+                  resolve(false)
+                }
               })
             } else {
               resolve(false)

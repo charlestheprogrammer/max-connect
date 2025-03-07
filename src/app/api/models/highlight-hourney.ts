@@ -8,7 +8,15 @@ const highlightTripSchema = new mongoose.Schema({
   to: Date,
   destination_iata: { type: String, index: true },
   origine_iata: { type: String, index: true },
-  trips: [
+  results_to: [
+    [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Journey',
+      },
+    ],
+  ],
+  results_from: [
     [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -25,7 +33,8 @@ type HighlightTrip = {
   to: Date
   destination_iata: string
   origine_iata: string
-  trips: mongoose.Types.ObjectId[][] | AvailableJourney[][]
+  results_to: mongoose.Types.ObjectId[][] | AvailableJourney[][]
+  results_from: mongoose.Types.ObjectId[][] | AvailableJourney[][]
 
   toObject?: () => HighlightTrip
 }

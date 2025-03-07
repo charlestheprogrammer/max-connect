@@ -21,10 +21,10 @@ const fetchFromTrainStation = async (
   start = new Date()
 ) => {
   return Journey.find({
-    origine_iata: iata,
+    $or: [{ origine_iata: iata }, { origine: iata }],
     date: {
       $gte: new Date(date),
-      $lt: new Date(date).setDate(new Date(date).getDate() + 1),
+      $lt: new Date(date).setHours(23, 59, 59, 999),
     },
     heure_depart: {
       $gte: start,
@@ -53,6 +53,7 @@ const destinationsFrom = async (
     .map((record) => {
       return {
         destination_iata: record.destination_iata,
+        destination: record.destination,
         heure_arrivee: record.heure_arrivee,
         depth: history.length,
         history: [...history, record],
@@ -62,14 +63,14 @@ const destinationsFrom = async (
   if (depth < 3) {
     for (const record of results) {
       if (
-        !seen.has(record.destination_iata) ||
-        depth + 1 < seen.get(record.destination_iata)
+        !seen.has(record.destination) ||
+        depth + 1 < seen.get(record.destination)
       ) {
         results.push(
           ...(await destinationsFrom(
             date,
             record.heure_arrivee,
-            record.destination_iata,
+            record.destination,
             fetcher,
             history.length,
             seen,
@@ -111,14 +112,23 @@ export const canGoFromTo = async (
   const destinations = await destinationsFrom(date, start, from, fetcher)
 
   const results = destinations
-    .filter((destination) => destination.destination_iata === to)
+    .filter(
+      (destination) =>
+        destination.destination_iata === to || destination.destination === to
+    )
     .filter(onlyUnique)
     .sort((a, b) => {
       if (a.depth === b.depth) {
-        return (
+        const diff =
           a.history[0].heure_depart.getTime() -
           b.history[0].heure_depart.getTime()
-        )
+        if (diff === 0) {
+          return (
+            a.history[0].heure_arrivee.getTime() -
+            b.history[0].heure_arrivee.getTime()
+          )
+        }
+        return diff
       }
       return a.depth - b.depth
     })

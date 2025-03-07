@@ -7,8 +7,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatTripDate(date: Date) {
-  return format(date, 'dd LLL y', {
+export function formatTripDate(date: Date, year = true) {
+  if (year) {
+    return format(date, 'dd LLL y', {
+      locale: fr,
+    })
+  }
+  return format(date, 'dd LLL', {
     locale: fr,
   })
 }

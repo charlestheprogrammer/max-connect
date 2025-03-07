@@ -2,7 +2,7 @@ import { connect } from '@/utils/server/mongoose'
 import Journey from '../models/journey'
 import { NextResponse } from 'next/server'
 
-export const maxDuration = 60;
+export const maxDuration = 60
 
 type TempJourney = {
   train_no: string
@@ -30,9 +30,8 @@ export async function GET() {
   await Journey.deleteMany({})
 
   await Journey.insertMany(
-    journeys.map((journey: TempJourney) => ({
-      ...journey,
-      heure_depart: new Date(
+    journeys.map((journey: TempJourney) => {
+      const heure_depart = new Date(
         new Date(journey.date).setHours(
           parseInt(journey.heure_depart.toString().split(':')[0]),
           parseInt(
@@ -41,8 +40,9 @@ export async function GET() {
             ]
           )
         )
-      ),
-      heure_arrivee: new Date(
+      )
+
+      const heure_arrivee = new Date(
         new Date(journey.date).setHours(
           parseInt(journey.heure_arrivee.toString().split(':')[0]),
           parseInt(
@@ -51,8 +51,18 @@ export async function GET() {
             ]
           )
         )
-      ),
-    }))
+      )
+
+      if (heure_depart > heure_arrivee) {
+        heure_arrivee.setDate(heure_arrivee.getDate() + 1)
+      }
+
+      return {
+        ...journey,
+        heure_depart: heure_depart,
+        heure_arrivee: heure_arrivee,
+      }
+    })
   )
 
   return NextResponse.json({ data: journeys.length }, { status: 200 })
