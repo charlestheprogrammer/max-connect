@@ -20,16 +20,23 @@ const fetchFromTrainStation = async (
   date: Date,
   start = new Date()
 ) => {
-  return Journey.find({
-    $or: [{ origine_iata: iata }, { origine: iata }],
-    date: {
-      $gte: new Date(date),
-      $lt: new Date(date).setHours(23, 59, 59, 999),
-    },
-    heure_depart: {
-      $gte: start,
-    },
-  })
+  return (
+    Journey.find({
+      $or: [{ origine_iata: iata }, { origine: iata }],
+      date: {
+        $gte: new Date(date),
+        $lt: new Date(date).setHours(23, 59, 59, 999),
+      },
+      heure_depart: {
+        $gte: start,
+      },
+    })
+      .select(
+        'train_no origine destination destination_iata origine_iata date heure_depart heure_arrivee _id'
+      )
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .lean() as Promise<any[]>
+  )
 }
 
 const destinationsFrom = async (
@@ -61,24 +68,27 @@ const destinationsFrom = async (
     })
 
   if (depth < 3) {
-    for (const record of results) {
+    const recursivePromises = results.map(async (record) => {
       if (
         !seen.has(record.destination) ||
         depth + 1 < seen.get(record.destination)
       ) {
-        results.push(
-          ...(await destinationsFrom(
-            date,
-            record.heure_arrivee,
-            record.destination,
-            fetcher,
-            history.length,
-            seen,
-            record.history
-          ))
+        return destinationsFrom(
+          date,
+          record.heure_arrivee,
+          record.destination,
+          fetcher,
+          history.length,
+          seen,
+          record.history
         )
       }
-    }
+      return []
+    })
+
+    // Process recursive calls in parallel
+    const recursiveResults = await Promise.all(recursivePromises)
+    results.push(...recursiveResults.flat())
   }
 
   return results
@@ -99,7 +109,27 @@ function onlyUnique(
     history: AvailableJourney[]
   }[]
 ) {
-  return array.findIndex((t) => JSON.stringify(t) === JSON.stringify(value))
+  const trainsMapping = value.history.map((t) => t.train_no)
+  const indexInArray = array.findIndex((t) => {
+    const trainsMapping2 = t.history.map((t) => t.train_no)
+    return JSON.stringify(trainsMapping) === JSON.stringify(trainsMapping2)
+  })
+  if (indexInArray !== -1 && indexInArray < index) {
+    return false
+  }
+  // Check if destination is reached before the last journey in the history
+  const lastJourney = value.history[value.history.length - 1]
+  const destinationReachedEarlier = value.history.some((journey, idx) => {
+    return (
+      idx < value.history.length - 1 &&
+      (journey.destination_iata === lastJourney.destination_iata ||
+        journey.destination === lastJourney.destination)
+    )
+  })
+  if (destinationReachedEarlier) {
+    return false
+  }
+  return true
 }
 
 export const canGoFromTo = async (
@@ -118,19 +148,22 @@ export const canGoFromTo = async (
     )
     .filter(onlyUnique)
     .sort((a, b) => {
-      if (a.depth === b.depth) {
-        const diff =
-          a.history[0].heure_depart.getTime() -
-          b.history[0].heure_depart.getTime()
-        if (diff === 0) {
-          return (
-            a.history[0].heure_arrivee.getTime() -
-            b.history[0].heure_arrivee.getTime()
-          )
-        }
-        return diff
-      }
-      return a.depth - b.depth
+      // First compare number of connections
+      const depthDiff = a.depth - b.depth
+      if (depthDiff !== 0) return depthDiff
+
+      // Then compare departure times
+      const aDepartTime = a.history[0].heure_depart.getTime()
+      const bDepartTime = b.history[0].heure_depart.getTime()
+      const departDiff = aDepartTime - bDepartTime
+      if (departDiff !== 0) return departDiff
+
+      // If departure times are equal, prioritize shorter journeys
+      const aDuration =
+        a.history[a.history.length - 1].heure_arrivee.getTime() - aDepartTime
+      const bDuration =
+        b.history[b.history.length - 1].heure_arrivee.getTime() - bDepartTime
+      return aDuration - bDuration
     })
   if (results.length > 0) {
     return {

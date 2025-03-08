@@ -19,7 +19,7 @@ export default async function Journeys({
   const populatedTrips = []
 
   populatedTrips.push(
-    ...(await Promise.all(
+    ...((await Promise.all(
       journeys.map(async (tripArray) => {
         return Promise.all(
           tripArray.map(async (journeyId) => {
@@ -28,14 +28,17 @@ export default async function Journeys({
           })
         )
       })
-    )) as AvailableJourney[][]
+    )) as AvailableJourney[][])
   )
 
   return (
     <div className="flex flex-col gap-2 flex-1">
-      {populatedTrips.map((tripArray, index) => (
-        <Journey key={index} journey={tripArray as AvailableJourney[]} />
-      ))}
+      {populatedTrips.map(
+        (tripArray, index) =>
+          tripArray[0] != null && (
+            <Journey key={index} journey={tripArray as AvailableJourney[]} />
+          )
+      )}
     </div>
   )
 }
