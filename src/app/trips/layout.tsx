@@ -8,9 +8,9 @@ const nunitoSans = Nunito_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'MAX Connect : Rentabilisez votre abonnement MAX Jeune !',
+  title: 'MAX Connect : Rentabilisez votre abonnement SNCF TGV MAX !',
   description:
-    'Réservez vos Billets de Train avec votre abonnement MAX Jeune et planifiez votre itinéraire sur MAX Connect !',
+    'Anticipez vos voyages SNCF avec votre abonnement MAX en planifiant votre itinéraire et vos correspondances sur MAX Connect !',
 }
 
 export default function RootLayout({

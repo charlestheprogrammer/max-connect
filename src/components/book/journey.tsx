@@ -14,8 +14,15 @@ import {
 import Image from 'next/image'
 import { formatTripDate } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
+import TrainStation from '@/app/api/models/train-station'
 
-export default function Journey({ journey }: { journey: AvailableJourney[] }) {
+export default function Journey({
+  journey,
+  data,
+}: {
+  journey: AvailableJourney[]
+  data?: TrainStation[]
+}) {
   const totalTime = useCallback(
     (start: Date, end: Date) => {
       const diffInMinutes = differenceInMinutes(end, start)
@@ -44,7 +51,11 @@ export default function Journey({ journey }: { journey: AvailableJourney[] }) {
                       locale: fr,
                     })}
                   </span>
-                  {' ' + journey[0].origine.toLowerCase()}
+                  {' ' +
+                    (
+                      data?.find((d) => d.iata === journey[0].origine_iata)
+                        ?.name || journey[0].origine
+                    ).toLowerCase()}
                 </p>
                 <p className="px-3 capitalize font-medium">
                   <span className="font-bold">
@@ -56,7 +67,14 @@ export default function Journey({ journey }: { journey: AvailableJourney[] }) {
                       }
                     )}
                   </span>
-                  {' ' + journey.at(-1)?.destination.toLowerCase()}
+                  {' ' +
+                    (
+                      data?.find(
+                        (d) => d.iata === journey.at(-1)?.destination_iata
+                      )?.name ||
+                      journey.at(-1)?.destination ||
+                      ''
+                    ).toLowerCase()}
                 </p>
               </div>
               <div className="block md:hidden px-3">
@@ -102,7 +120,11 @@ export default function Journey({ journey }: { journey: AvailableJourney[] }) {
                   locale: fr,
                 })}
               </span>
-              {' ' + journey[0].origine.toLowerCase()}
+              {' ' +
+                (
+                  data?.find((d) => d.iata === journey[0].origine_iata)?.name ||
+                  journey[0].origine
+                ).toLowerCase()}
             </p>
             <p className="capitalize">
               <span className="font-semibold">
@@ -110,7 +132,13 @@ export default function Journey({ journey }: { journey: AvailableJourney[] }) {
                   locale: fr,
                 })}
               </span>
-              {' ' + journey.at(-1)?.destination.toLowerCase()}
+              {' ' +
+                (
+                  data?.find((d) => d.iata === journey.at(-1)?.destination_iata)
+                    ?.name ||
+                  journey.at(-1)?.destination ||
+                  ''
+                ).toLowerCase()}
             </p>
           </div>
           <Separator className="bg-gray-400" />
@@ -165,7 +193,9 @@ export default function Journey({ journey }: { journey: AvailableJourney[] }) {
                 <div className="flex-1">
                   <p className="font-medium capitalize">
                     {format(record.heure_depart, 'HH:mm', { locale: fr })}{' '}
-                    {record.origine.toLowerCase()}
+                    {data
+                      ?.find((d) => d.iata === record.origine_iata)
+                      ?.name.toLowerCase() || record.origine.toLowerCase()}
                   </p>
                   <div className="bg-[#f3f3f8] p-3 rounded-lg my-4">
                     <div className="flex justify-between items-center">
@@ -190,7 +220,9 @@ export default function Journey({ journey }: { journey: AvailableJourney[] }) {
                   </div>
                   <p className="font-medium capitalize">
                     {format(record.heure_arrivee, 'HH:mm', { locale: fr })}{' '}
-                    {record.destination.toLowerCase()}
+                    {data
+                      ?.find((d) => d.iata === record.destination_iata)
+                      ?.name.toLowerCase() || record.destination.toLowerCase()}
                   </p>
                 </div>
               </div>

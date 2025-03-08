@@ -3,13 +3,16 @@ import HighlightTrip from '@/app/api/models/highlight-hourney'
 import JourneyModel from '@/app/api/models/journey'
 import Journey from '@/components/book/journey'
 import { AvailableJourney } from '@/components/book/journeys'
+import TrainStation from '@/app/api/models/train-station'
 
 export default async function Journeys({
   data,
   way,
+  trainStations,
 }: {
   data: HighlightTrip | null
   way: 'to' | 'from'
+  trainStations: TrainStation[]
 }) {
   if (!data) {
     return <div>Not found</div>
@@ -36,7 +39,11 @@ export default async function Journeys({
       {populatedTrips.map(
         (tripArray, index) =>
           tripArray[0] != null && (
-            <Journey key={index} journey={tripArray as AvailableJourney[]} />
+            <Journey
+              key={index}
+              journey={tripArray as AvailableJourney[]}
+              data={trainStations}
+            />
           )
       )}
     </div>

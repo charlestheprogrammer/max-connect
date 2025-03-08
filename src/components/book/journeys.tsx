@@ -6,6 +6,7 @@ import { addDays, format, subDays } from 'date-fns'
 import Journey from './journey'
 import DateSelector from './date-selector'
 import { LoadingSpinner } from '../ui/loading-spinner'
+import TrainStation from '@/app/api/models/train-station'
 
 export type AvailableJourney = {
   train_no: string
@@ -60,7 +61,11 @@ const fetchSncfData = async (
   }
 }
 
-export default function Journeys() {
+export default function Journeys({
+  trainStations,
+}: {
+  trainStations: TrainStation[]
+}) {
   const [data, setData] = React.useState<{
     count: number
     journeys: AvailableJourney[][]
@@ -68,29 +73,38 @@ export default function Journeys() {
   const searchParams = useSearchParams()
 
   // Store both the journeys and loading state for each date
-  const [dateStates, setDateStates] = React.useState<Map<string, {
-    journeys: AvailableJourney[][] | null,
-    isLoading: boolean
-  }>>(new Map())
-  
+  const [dateStates, setDateStates] = React.useState<
+    Map<
+      string,
+      {
+        journeys: AvailableJourney[][] | null
+        isLoading: boolean
+      }
+    >
+  >(new Map())
+
   const [activeDate, setActiveDate] = React.useState<string | null>(null)
 
   const fetchDateData = async (date: string) => {
-    setDateStates(prev => new Map(prev).set(date, { 
-      journeys: null, 
-      isLoading: true 
-    }))
+    setDateStates((prev) =>
+      new Map(prev).set(date, {
+        journeys: null,
+        isLoading: true,
+      })
+    )
 
     const data = await fetchSncfData(
       searchParams.get('from'),
       searchParams.get('to'),
       new Date(date)
     ).catch(() => null)
-    
-    setDateStates(prev => new Map(prev).set(date, { 
-      journeys: data?.journeys || [], 
-      isLoading: false 
-    }))
+
+    setDateStates((prev) =>
+      new Map(prev).set(date, {
+        journeys: data?.journeys || [],
+        isLoading: false,
+      })
+    )
 
     return data
   }
@@ -98,7 +112,7 @@ export default function Journeys() {
   const getSearchResults = async (date: Date) => {
     setData(null)
     const formattedCurrentDate = format(date, 'y-MM-dd')
-    
+
     // Calculate all dates to fetch upfront
     const datesToFetch = new Set<string>()
     for (let i = -3; i < 4; i++) {
@@ -106,15 +120,20 @@ export default function Journeys() {
       if (i < 0 && addDays(new Date(date), i) < new Date()) {
         datesToFetch.add(format(addDays(date, 3 + Math.abs(i)), 'y-MM-dd'))
       } else {
-        datesToFetch.add(i < 0 
-          ? format(subDays(date, Math.abs(i)), 'y-MM-dd')
-          : format(addDays(date, i), 'y-MM-dd'))
+        datesToFetch.add(
+          i < 0
+            ? format(subDays(date, Math.abs(i)), 'y-MM-dd')
+            : format(addDays(date, i), 'y-MM-dd')
+        )
       }
     }
 
     // Initialize all dates with loading state
-    const initialStates = new Map<string, { journeys: AvailableJourney[][] | null, isLoading: boolean }>()
-    datesToFetch.forEach(date => {
+    const initialStates = new Map<
+      string,
+      { journeys: AvailableJourney[][] | null; isLoading: boolean }
+    >()
+    datesToFetch.forEach((date) => {
       initialStates.set(date, { journeys: null, isLoading: true })
     })
     setDateStates(initialStates)
@@ -130,11 +149,13 @@ export default function Journeys() {
     }
 
     // Fetch other dates in parallel
-    const otherDates = Array.from(datesToFetch).filter(d => d !== formattedCurrentDate)
+    const otherDates = Array.from(datesToFetch).filter(
+      (d) => d !== formattedCurrentDate
+    )
     Promise.all(
       otherDates
         .sort((a, b) => a.localeCompare(b))
-        .map(day => fetchDateData(day))
+        .map((day) => fetchDateData(day))
     )
   }
 
@@ -169,6 +190,7 @@ export default function Journeys() {
                 index
               }
               journey={journey}
+              data={trainStations}
             />
           ))}
           {data.journeys.length === 0 && (

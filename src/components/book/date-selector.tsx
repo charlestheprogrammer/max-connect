@@ -6,10 +6,13 @@ import { cn } from '@/lib/utils'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 
 interface DateSelectorProps {
-  dateStates: Map<string, {
-    journeys: AvailableJourney[][] | null,
-    isLoading: boolean
-  }>
+  dateStates: Map<
+    string,
+    {
+      journeys: AvailableJourney[][] | null
+      isLoading: boolean
+    }
+  >
   activeDate: string | null
   setActiveDate: (date: string) => void
   setData: (data: { count: number; journeys: AvailableJourney[][] }) => void
@@ -68,18 +71,26 @@ export default function DateSelector({
                 state.isLoading && 'opacity-70'
               )}
             >
-              {format(new Date(date), 'E dd', { locale: fr }).replace('.', '')}
               {state.isLoading ? (
-                <div className="flex justify-center mt-2">
-                  <LoadingSpinner size={16} color={activeDate === date ? "#fff" : "#14708a"} />
+                <div className="flex justify-center">
+                  <LoadingSpinner
+                    size={16}
+                    color={activeDate === date ? '#fff' : '#14708a'}
+                  />
                 </div>
               ) : (
-                <p className="hidden md:block">
-                  <span className="font-bold">
-                    {state.journeys?.length || 0}
-                  </span>
-                  {(state.journeys?.length || 0) > 1 ? ' options' : ' option'}
-                </p>
+                <>
+                  {format(new Date(date), 'E dd', { locale: fr }).replace(
+                    '.',
+                    ''
+                  )}
+                  <p className="hidden md:block">
+                    <span className="font-bold">
+                      {state.journeys?.length || 0}
+                    </span>
+                    {(state.journeys?.length || 0) > 1 ? ' options' : ' option'}
+                  </p>
+                </>
               )}
             </button>
           ))}

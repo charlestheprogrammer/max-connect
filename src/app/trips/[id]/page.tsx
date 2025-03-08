@@ -18,9 +18,7 @@ type Props = {
   searchParams: Promise<{ way: 'to' | 'from' }>
 }
 
-export async function generateMetadata(
-  { params }: Props,
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // read route params
   const { id } = await params
 
@@ -194,7 +192,11 @@ export default async function Page(props: {
             </p>
           }
         >
-          <Journeys data={trip} way={searchParams?.way ?? 'from'} />
+          <Journeys
+            data={trip}
+            way={searchParams?.way ?? 'from'}
+            trainStations={data}
+          />
         </Suspense>{' '}
       </div>
     </div>
