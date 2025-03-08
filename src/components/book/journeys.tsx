@@ -67,44 +67,75 @@ export default function Journeys() {
   } | null>(null)
   const searchParams = useSearchParams()
 
-  const [journeysByDate, setJourneysByDate] = React.useState<
-    Map<string, AvailableJourney[][]>
-  >(new Map())
+  // Store both the journeys and loading state for each date
+  const [dateStates, setDateStates] = React.useState<Map<string, {
+    journeys: AvailableJourney[][] | null,
+    isLoading: boolean
+  }>>(new Map())
+  
+  const [activeDate, setActiveDate] = React.useState<string | null>(null)
+
+  const fetchDateData = async (date: string) => {
+    setDateStates(prev => new Map(prev).set(date, { 
+      journeys: null, 
+      isLoading: true 
+    }))
+
+    const data = await fetchSncfData(
+      searchParams.get('from'),
+      searchParams.get('to'),
+      new Date(date)
+    ).catch(() => null)
+    
+    setDateStates(prev => new Map(prev).set(date, { 
+      journeys: data?.journeys || [], 
+      isLoading: false 
+    }))
+
+    return data
+  }
 
   const getSearchResults = async (date: Date) => {
     setData(null)
-    const datesToResults = new Map<string, AvailableJourney[][]>()
-    const daysToFetch = []
-    // Fetch previous 3 days and next 3 days
+    const formattedCurrentDate = format(date, 'y-MM-dd')
+    
+    // Calculate all dates to fetch upfront
+    const datesToFetch = new Set<string>()
     for (let i = -3; i < 4; i++) {
       // If the date is in the past, skip it and fetch a day in the future
       if (i < 0 && addDays(new Date(date), i) < new Date()) {
-        daysToFetch.push(format(addDays(date, 3 + Math.abs(i)), 'y-MM-dd'))
-        continue
-      }
-      if (i < 0) {
-        console.log(date, subDays(date, Math.abs(i)))
-        daysToFetch.push(format(subDays(date, Math.abs(i)), 'y-MM-dd'))
+        datesToFetch.add(format(addDays(date, 3 + Math.abs(i)), 'y-MM-dd'))
       } else {
-        daysToFetch.push(format(addDays(date, i), 'y-MM-dd'))
+        datesToFetch.add(i < 0 
+          ? format(subDays(date, Math.abs(i)), 'y-MM-dd')
+          : format(addDays(date, i), 'y-MM-dd'))
       }
     }
-    for (const day of daysToFetch.sort((a, b) => a.localeCompare(b))) {
-      const data = await fetchSncfData(
-        searchParams.get('from'),
-        searchParams.get('to'),
-        new Date(day)
-      ).catch(() => null)
-      if (data) {
-        datesToResults.set(day, data.journeys)
-      }
-    }
-    setJourneysByDate(datesToResults)
-    setData({
-      count: datesToResults.get(format(date, 'y-MM-dd'))?.length || 0,
-      journeys: datesToResults.get(format(date, 'y-MM-dd')) || [],
+
+    // Initialize all dates with loading state
+    const initialStates = new Map<string, { journeys: AvailableJourney[][] | null, isLoading: boolean }>()
+    datesToFetch.forEach(date => {
+      initialStates.set(date, { journeys: null, isLoading: true })
     })
-    setActiveDate(format(new Date(date), 'y-MM-dd'))
+    setDateStates(initialStates)
+
+    // Fetch current date first
+    const currentDateData = await fetchDateData(formattedCurrentDate)
+    if (currentDateData) {
+      setData({
+        count: currentDateData.journeys.length,
+        journeys: currentDateData.journeys,
+      })
+      setActiveDate(formattedCurrentDate)
+    }
+
+    // Fetch other dates in parallel
+    const otherDates = Array.from(datesToFetch).filter(d => d !== formattedCurrentDate)
+    Promise.all(
+      otherDates
+        .sort((a, b) => a.localeCompare(b))
+        .map(day => fetchDateData(day))
+    )
   }
 
   React.useEffect(() => {
@@ -113,13 +144,11 @@ export default function Journeys() {
     }
   }, [searchParams])
 
-  const [activeDate, setActiveDate] = React.useState<string | null>(null)
-
   return (
     <div>
-      {journeysByDate.size > 0 && (
+      {dateStates.size > 0 && (
         <DateSelector
-          journeysByDate={journeysByDate}
+          dateStates={dateStates}
           activeDate={activeDate}
           setActiveDate={setActiveDate}
           setData={setData}

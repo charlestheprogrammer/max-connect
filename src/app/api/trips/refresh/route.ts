@@ -47,7 +47,12 @@ const fetchFromTrainStation = async (
 const getNextWeekendRange = () => {
   const today = new Date()
   const day = today.getDay()
-  const diff = 5 - day
+  let diff = 5 - day
+  if (diff < 0) {
+    diff += 7
+  }
+  console.log(diff);
+  
   const nextFriday = new Date(today)
   nextFriday.setDate(today.getDate() + diff)
   nextFriday.setHours(0, 0, 0, 0)
@@ -76,6 +81,8 @@ export async function GET() {
             fromAtMidnight,
             fetchFromTrainStation
           ).then((result_from) => {
+            console.log(result_from.canGo)
+
             if (result_from.canGo) {
               canGoFromTo(
                 destination,
