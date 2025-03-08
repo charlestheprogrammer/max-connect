@@ -55,7 +55,7 @@ export function SearchBar({
     const toDate = date?.to ? `&toDate=${formatToFr(date.to)}` : ''
 
     router.push(
-      `book?from=${fromStation.iata}&to=${toStation.iata}&fromDate=${formatToFr(date.from)}${toDate}`
+      `/book?from=${fromStation.iata}&to=${toStation.iata}&fromDate=${formatToFr(date.from)}${toDate}`
     )
   }
 

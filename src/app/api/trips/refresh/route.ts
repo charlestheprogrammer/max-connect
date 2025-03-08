@@ -51,8 +51,7 @@ const getNextWeekendRange = () => {
   if (diff < 0) {
     diff += 7
   }
-  console.log(diff);
-  
+
   const nextFriday = new Date(today)
   nextFriday.setDate(today.getDate() + diff)
   nextFriday.setHours(0, 0, 0, 0)
@@ -66,14 +65,13 @@ export async function GET() {
   await connect()
   const trips = []
   journeys.push(...(await Journey.find({})))
-  await HighlightTrip.deleteMany({})
   const { from, to } = getNextWeekendRange()
   const fromAtMidnight = new Date(from)
   fromAtMidnight.setHours(0, 0)
   for (const destination of interestingDestinations) {
     for (const parisStation of parisStations) {
       trips.push(
-        new Promise((resolve) => {
+        new Promise<mongo.ObjectId | null>((resolve) => {
           canGoFromTo(
             parisStation,
             destination,
@@ -81,8 +79,6 @@ export async function GET() {
             fromAtMidnight,
             fetchFromTrainStation
           ).then((result_from) => {
-            console.log(result_from.canGo)
-
             if (result_from.canGo) {
               canGoFromTo(
                 destination,
@@ -90,9 +86,9 @@ export async function GET() {
                 to,
                 to,
                 fetchFromTrainStation
-              ).then((result_to) => {
+              ).then(async (result_to) => {
                 if (result_to.canGo) {
-                  HighlightTrip.insertOne({
+                  const highlightTripData = {
                     origine: parisStation,
                     destination,
                     from,
@@ -112,21 +108,41 @@ export async function GET() {
                           (journey) => new mongo.ObjectId(journey._id)
                         )
                       ) || [],
-                  }).then(() => {
-                    resolve(true)
+                  }
+
+                  const existingTrip = await HighlightTrip.findOne({
+                    origine: parisStation,
+                    destination,
+                    from,
+                    to,
                   })
+
+                  let tripId: mongo.ObjectId | null = null
+
+                  if (existingTrip) {
+                    tripId = (await HighlightTrip.findByIdAndUpdate(
+                      existingTrip._id,
+                      highlightTripData
+                    ).exec())._id
+                  } else {
+                    await HighlightTrip.insertOne(highlightTripData)
+                  }
+                  resolve(tripId)
                 } else {
-                  resolve(false)
+                  resolve(null)
                 }
               })
             } else {
-              resolve(false)
+              resolve(null)
             }
           })
         })
       )
     }
   }
-  await Promise.all(trips)
+  const results = await Promise.all(trips)
+  await HighlightTrip.deleteMany({
+    _id: { $nin: results.filter((result) => result !== null) },
+  })
   return NextResponse.json(trips, { status: 200 })
 }

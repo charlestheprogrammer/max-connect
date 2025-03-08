@@ -8,6 +8,52 @@ import { cn, formatTripDate } from '@/lib/utils'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import SwitchWay from '@/components/trips/switch-way'
+import { Metadata } from 'next'
+import Image from 'next/image'
+import Trips from '@/components/home/trips'
+import { SearchBar } from '@/components/search-bar'
+
+type Props = {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ way: 'to' | 'from' }>
+}
+
+export async function generateMetadata(
+  { params }: Props,
+): Promise<Metadata> {
+  // read route params
+  const { id } = await params
+
+  await connect()
+  const trip: HighlightTrip | null = await HighlightTrip.findById(id)
+
+  const supabase = await createClient()
+  const { data } = await supabase.from('train-station').select()
+
+  if (!trip || !data) {
+    return {
+      title: 'Voyage non trouvé',
+      description: "Le voyage que vous cherchez n'existe pas",
+    }
+  }
+
+  return {
+    title: `Voyage vers
+            ${
+              data?.find((station) => station.iata === trip?.destination_iata)
+                ?.name
+            } du ${formatTripDate(trip?.from, false)} au ${formatTripDate(
+      trip?.to,
+      false
+    )}`,
+    description: `Découvrez les différents trajets disponibles pour votre voyage vers ${
+      data?.find((station) => station.iata === trip?.destination_iata)?.name
+    } du ${formatTripDate(trip?.from, false)} au ${formatTripDate(
+      trip?.to,
+      false
+    )}`,
+  }
+}
 
 export default async function Page(props: {
   params: Promise<{ id: string }>
@@ -23,7 +69,39 @@ export default async function Page(props: {
   const { data } = await supabase.from('train-station').select()
 
   if (!trip || !data) {
-    return <div>Not found</div>
+    return (
+      <div className="min-h-screen font-[family-name:var(--font-nunito-sans)] bg-[#F3F3F8]">
+        <main className="flex flex-col items-center justify-end bg-[#0C131F] h-[240px] relative">
+          <Image
+            src="/sncf-connect.svg"
+            alt="SNCF Connect logo"
+            className="absolute top-4 left-4"
+            width={130}
+            height={64}
+            priority
+          />
+          {data && (
+            <SearchBar trainStations={data} className="translate-y-1/2" />
+          )}
+        </main>
+        <div className="w-11/12 max-w-[1000px] mx-auto p-4 mt-[150px] md:mt-[100px]">
+          <div className="w-full max-w-[800px] mx-auto flex flex-col items-center justify-center min-h-full">
+            <h1>Ce voyage n&apos;a pas pu être trouvé</h1>
+            <Image
+              src="/not-found.png"
+              alt="Not found"
+              className="object-fill relative"
+              width={500}
+              height={500}
+            ></Image>
+          </div>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold max-w-[600px] mt-10">
+            Explorez les voyages disponibles pour 0€
+          </h1>
+          {data && <Trips trainStations={data} />}
+        </div>
+      </div>
+    )
   }
 
   return (
