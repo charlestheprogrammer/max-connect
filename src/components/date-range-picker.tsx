@@ -42,7 +42,7 @@ export function DatePickerWithRange({
             id="date-from"
             variant={'ghost'}
             className={cn(
-              'flex-1 md:w-[180px] justify-start text-center font-normal h-full',
+              'flex-1 md:w-[180px] justify-start text-center font-normal h-full p-2',
               !date?.from && 'text-muted-foreground'
             )}
           >
@@ -63,7 +63,7 @@ export function DatePickerWithRange({
             id="date-to"
             variant={'ghost'}
             className={cn(
-              'flex-1 md:w-[180px] justify-start text-center font-normal h-full',
+              'flex-1 md:w-[180px] justify-start text-center font-normal h-full p-2',
               !date?.to && 'text-muted-foreground'
             )}
           >

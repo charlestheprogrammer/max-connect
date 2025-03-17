@@ -110,7 +110,7 @@ export default function Journey({
         <SheetHeader>
           <SheetTitle>Votre voyage</SheetTitle>
           <p className="text-sm text-muted-foreground">
-            Aller : {formatTripDate(journey[0].date)}
+            Aller : {formatTripDate(journey[0].heure_depart)}
           </p>
           <Separator className="bg-gray-400" />
           <div className="text-left">

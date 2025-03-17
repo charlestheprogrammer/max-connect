@@ -5,6 +5,7 @@ import CurrentOffer from './current-offer'
 import { Button } from '../ui/button'
 import { MoveLeft, MoveRight } from 'lucide-react'
 import TrainStation from '@/app/api/models/train-station'
+import { Skeleton } from '../ui/skeleton'
 
 type HighlightTrip = {
   origine: string
@@ -21,12 +22,14 @@ export default function Trips({
   trainStations: TrainStation[]
 }) {
   const [trips, setTrips] = React.useState<HighlightTrip[]>([])
+  const [loaded, setLoaded] = React.useState<boolean>(false)
 
   React.useEffect(() => {
     fetch('/api/trips')
       .then((res) => res.json())
       .then((data) => {
         setTrips(data)
+        setLoaded(true)
       })
   }, [])
 
@@ -38,6 +41,16 @@ export default function Trips({
         className="overflow-x-auto w-full flex flex-row gap-4 no-scrollbar"
         ref={swiperRef}
       >
+        {!loaded && (
+          <>
+            <Skeleton className="w-[220px] h-[340px] shrink-0" />
+            <Skeleton className="w-[220px] h-[340px] shrink-0" />
+            <Skeleton className="w-[220px] h-[340px] shrink-0" />
+            <Skeleton className="w-[220px] h-[340px] shrink-0" />
+            <Skeleton className="w-[220px] h-[340px] shrink-0" />
+            <Skeleton className="w-[220px] h-[340px] shrink-0" />
+          </>
+        )}
         {trips.map((trip, index) => (
           <CurrentOffer
             key={index}
@@ -58,34 +71,36 @@ export default function Trips({
           />
         ))}
       </div>
-      <div className="flex flex-row justify-end mt-14 gap-2">
-        <Button
-          size="icon"
-          variant="ghost"
-          className="h-12 w-12 border border-[#0C131F] rounded-full"
-          onClick={() => {
-            swiperRef.current?.scrollBy({
-              left: -240,
-              behavior: 'smooth',
-            })
-          }}
-        >
-          <MoveLeft color="#0C131F" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="h-12 w-12 border border-[#0C131F] rounded-full"
-          onClick={() => {
-            swiperRef.current?.scrollBy({
-              left: 240,
-              behavior: 'smooth',
-            })
-          }}
-        >
-          <MoveRight color="#0C131F" />
-        </Button>
-      </div>
+      {loaded && (
+        <div className="flex flex-row justify-end mt-14 gap-2">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-12 w-12 border border-[#0C131F] rounded-full"
+            onClick={() => {
+              swiperRef.current?.scrollBy({
+                left: -240,
+                behavior: 'smooth',
+              })
+            }}
+          >
+            <MoveLeft color="#0C131F" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-12 w-12 border border-[#0C131F] rounded-full"
+            onClick={() => {
+              swiperRef.current?.scrollBy({
+                left: 240,
+                behavior: 'smooth',
+              })
+            }}
+          >
+            <MoveRight color="#0C131F" />
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
