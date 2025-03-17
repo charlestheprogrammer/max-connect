@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import SuggestedTrip from '../../models/suggested-trip'
 import { connect } from '@/utils/server/mongoose'
 
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   await connect()
   const body = await req.json()

@@ -6,6 +6,7 @@ import { intervalToDuration } from 'date-fns'
 import { AvailableJourney } from '../book/journeys'
 import { Skeleton } from '../ui/skeleton'
 import Link from 'next/link'
+import { Clock } from 'lucide-react'
 
 const retrieveQuickerRoute = (journeys: AvailableJourney[][]) => {
   const quicker = journeys
@@ -41,7 +42,7 @@ export default function TripSuggestionComponent({
   )
 
   return (
-    <Link href={`/trips/suggestion/${suggestion._id}`}>
+    <Link href={`/trips/suggestion/${suggestion._id}`} target="_blank">
       <div className="bg-white p-1 w-[220px] shrink-0 rounded-lg overflow-hidden">
         <div className="h-[160px] w-[calc(220px-.5rem)] rounded-t-sm overflow-hidden relative">
           {!loadingError ? (
@@ -71,13 +72,13 @@ export default function TripSuggestionComponent({
                   ?.name.toLowerCase() || suggestion.from.toLowerCase()}
               </span>
               <br />
-              {quickerRouteTimeAtInbound}
-              {quickerRouteTimeAtOutbound}
+              <Clock size={13} className="inline-block" />{' '}
+              {quickerRouteTimeAtInbound} • {quickerRouteTimeAtOutbound}
             </p>
           </div>
           <div className="mb-2">
             <p className="text-sm text-muted-foreground mb-1">
-              Accèssible pour
+              Accessible pour
             </p>
             <div className="rounded-lg bg-[#F1C83C] size-fit px-3 py-2 font-bold flex flex-row gap-1">
               <p>0 €</p>
