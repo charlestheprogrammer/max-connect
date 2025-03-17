@@ -12,6 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { addDays } from 'date-fns'
 
 export function DatePickerWithRange({
   className,
@@ -42,7 +43,7 @@ export function DatePickerWithRange({
             id="date-from"
             variant={'ghost'}
             className={cn(
-              'flex-1 md:w-[180px] justify-start text-center font-normal h-full',
+              'flex-1 md:w-[180px] justify-start text-center font-normal h-full p-2',
               !date?.from && 'text-muted-foreground'
             )}
           >
@@ -63,7 +64,7 @@ export function DatePickerWithRange({
             id="date-to"
             variant={'ghost'}
             className={cn(
-              'flex-1 md:w-[180px] justify-start text-center font-normal h-full',
+              'flex-1 md:w-[180px] justify-start text-center font-normal h-full p-2',
               !date?.to && 'text-muted-foreground'
             )}
           >
@@ -85,6 +86,7 @@ export function DatePickerWithRange({
       <PopoverContent className="w-auto p-0" align="center">
         <Calendar
           initialFocus
+          toDate={addDays(new Date(), 31)}
           mode="range"
           defaultMonth={date?.from}
           selected={date}
