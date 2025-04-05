@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
-import Journey from './journey'
+// @ts-ignore
+import Journey from './journey.ts'
 
 const highlightTripSchema = new mongoose.Schema({
   origine: String,

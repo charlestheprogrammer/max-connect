@@ -1,5 +1,7 @@
-import { connect } from './db'
-import Journey from './models/journey'
+// @ts-ignore
+import { connect } from './db.ts'
+// @ts-ignore
+import Journey from './models/journey.ts'
 
 type TempJourney = {
   train_no: string

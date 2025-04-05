@@ -165,7 +165,7 @@ export default function TripSuggester({
         {noResults && (
           <div className="w-full flex items-center flex-col">
             <p>
-              Aucun boyage depuis {fromStation?.name} n&apos;a été trouvé pour
+              Aucun voyage depuis {fromStation?.name} n&apos;a été trouvé pour
               vos dates
             </p>
             <Image

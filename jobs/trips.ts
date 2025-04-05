@@ -1,7 +1,10 @@
 import { mongo } from 'mongoose'
-import { connect } from './db'
-import HighlightTrip from './models/highlight-trip'
-import Journey from './models/journey'
+// @ts-ignore
+import { connect } from './db.ts'
+// @ts-ignore
+import HighlightTrip from './models/highlight-trip.ts'
+// @ts-ignore
+import Journey from './models/journey.ts'
 
 const interestingDestinations = [
   'FRNIC',

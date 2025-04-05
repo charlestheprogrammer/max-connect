@@ -1,5 +1,7 @@
-import { updateJourneys } from './journeys'
-import { refreshTrips } from './trips'
+// @ts-ignore
+import { updateJourneys } from './journeys.ts'
+// @ts-ignore
+import { refreshTrips } from './trips.ts'
 
 // @ts-ignore
 Deno.cron('Update journeys', '0 */4 * * *', updateJourneys)
