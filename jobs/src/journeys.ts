@@ -1,43 +1,5 @@
-import mongoose from 'mongoose'
-
-const journeySchema = new mongoose.Schema({
-  train_no: String,
-  origine: { type: String, index: true },
-  destination: { type: String, index: true },
-  destination_iata: { type: String, index: true },
-  origine_iata: { type: String, index: true },
-  date: Date,
-  heure_depart: Date,
-  heure_arrivee: Date,
-})
-
-type Journey = {
-  train_no: string
-  origine: string
-  destination: string
-  destination_iata: string
-  origine_iata: string
-  date: Date
-  heure_depart: Date
-  heure_arrivee: Date
-}
-
-const Journey =
-  mongoose.models.Journey || mongoose.model('Journey', journeySchema)
-
-export default Journey
-
-export const connect = async () => {
-  if (mongoose.connection.readyState >= 1) {
-    return
-  }
-
-  return mongoose.connect(process.env.MONGODB_URI!, {
-    dbName: process.env.MONGODB_DB,
-  })
-}
-
-export const maxDuration = 60
+import { connect } from './db'
+import Journey from './models/journey'
 
 type TempJourney = {
   train_no: string
@@ -51,7 +13,7 @@ type TempJourney = {
   od_happy_card: string
 }
 
-Deno.cron('Update journeys', '0 5 * * *', async () => {
+export const updateJourneys = async () => {
   await connect()
 
   const journeysResponse = await fetch(
@@ -99,4 +61,4 @@ Deno.cron('Update journeys', '0 5 * * *', async () => {
       }
     })
   )
-})
+}

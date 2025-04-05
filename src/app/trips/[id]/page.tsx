@@ -1,4 +1,4 @@
-import HighlightTrip from '@/app/api/models/highlight-hourney'
+import HighlightTrip from '@/app/api/models/highlight-trip'
 import { connect } from '@/utils/server/mongoose'
 import Journeys from './journeys'
 import { Suspense } from 'react'

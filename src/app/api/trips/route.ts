@@ -1,6 +1,6 @@
 import { connect } from '@/utils/server/mongoose'
 import { NextResponse } from 'next/server'
-import HighlightTrip from '../models/highlight-hourney'
+import HighlightTrip from '@/app/api/models/highlight-trip'
 
 export async function GET() {
   await connect()

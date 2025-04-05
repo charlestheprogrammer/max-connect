@@ -1,7 +1,7 @@
 import { mongo } from 'mongoose'
-import { canGoFromTo } from '../../journeys/utils'
-import HighlightTrip from '../../models/highlight-hourney'
-import Journey from '../../models/journey'
+import { canGoFromTo } from '@/app/api/journeys/utils'
+import HighlightTrip from '@/app/api/models/highlight-trip'
+import Journey from '@/app/api/models/journey'
 
 let journeys: Journey[] = []
 

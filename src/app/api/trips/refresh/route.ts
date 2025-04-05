@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import HighlightTrip from '../../models/highlight-hourney'
+import HighlightTrip from '@/app/api/models/highlight-trip'
 import { connect } from '@/utils/server/mongoose'
-import Journey from '../../models/journey'
+import Journey from '@/app/api/models/journey'
 import { refreshSingleTrip, setJourneys } from './utils'
 
 export const maxDuration = 60

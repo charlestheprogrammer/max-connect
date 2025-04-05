@@ -1,5 +1,5 @@
 import React from 'react'
-import HighlightTrip from '@/app/api/models/highlight-hourney'
+import HighlightTrip from '@/app/api/models/highlight-trip'
 import JourneyModel from '@/app/api/models/journey'
 import Journey from '@/components/book/journey'
 import { AvailableJourney } from '@/components/book/journeys'
