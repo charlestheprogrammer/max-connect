@@ -31,24 +31,30 @@ export const updateJourneys = async () => {
   await Journey.insertMany(
     journeys.map((journey: TempJourney) => {
       const heure_depart = new Date(
-        new Date(journey.date).setHours(
-          parseInt(journey.heure_depart.toString().split(':')[0]),
-          parseInt(
-            journey.heure_depart.toString().split(':')[
-              journey.heure_depart.toString().split(':').length - 1
-            ]
-          )
+        new Date(journey.date).toLocaleString('en-US', {
+          timeZone: 'Europe/Paris',
+        })
+      )
+      heure_depart.setHours(
+        parseInt(journey.heure_depart.toString().split(':')[0]),
+        parseInt(
+          journey.heure_depart.toString().split(':')[
+        journey.heure_depart.toString().split(':').length - 1
+          ]
         )
       )
 
       const heure_arrivee = new Date(
-        new Date(journey.date).setHours(
-          parseInt(journey.heure_arrivee.toString().split(':')[0]),
-          parseInt(
-            journey.heure_arrivee.toString().split(':')[
-              journey.heure_arrivee.toString().split(':').length - 1
-            ]
-          )
+        new Date(journey.date).toLocaleString('en-US', {
+          timeZone: 'Europe/Paris',
+        })
+      )
+      heure_arrivee.setHours(
+        parseInt(journey.heure_arrivee.toString().split(':')[0]),
+        parseInt(
+          journey.heure_arrivee.toString().split(':')[
+        journey.heure_arrivee.toString().split(':').length - 1
+          ]
         )
       )
 
