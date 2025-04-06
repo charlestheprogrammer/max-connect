@@ -64,8 +64,12 @@ export const updateJourneys = async () => {
 
       return {
         ...journey,
-        heure_depart: heure_depart,
-        heure_arrivee: heure_arrivee,
+        heure_depart: new Date(
+          heure_depart.toISOString().replace('Z', '+02:00')
+        ),
+        heure_arrivee: new Date(
+          heure_arrivee.toISOString().replace('Z', '+02:00')
+        ),
       }
     })
   )

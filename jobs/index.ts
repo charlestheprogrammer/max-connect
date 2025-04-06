@@ -4,7 +4,7 @@ import { updateJourneys } from './journeys.ts'
 import { refreshTrips } from './trips.ts'
 
 // @ts-ignore
-Deno.cron('Update journeys', '0 */4 * * *', updateJourneys)
+Deno.cron('Update journeys', '50 4 * * *', updateJourneys)
 
 // @ts-ignore
 Deno.cron('Refresh trips', '0 5 * * *', refreshTrips)
