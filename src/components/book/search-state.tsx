@@ -195,7 +195,7 @@ export default function SearchState({
               {!searchParams.get('toDate') && (
                 <>
                   <Plus size={20} color="#666666" />
-                  Ajouter un aller
+                  Ajouter un retour
                 </>
               )}
               {searchParams.get('toDate') && (
