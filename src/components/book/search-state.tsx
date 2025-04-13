@@ -68,6 +68,10 @@ export default function SearchState({
       newParams.set('fromDate', formatToFr(date.from))
       newParams.delete('outbound')
       router.push(`/book?${newParams.toString()}`)
+    } else {
+      const newParams = new URLSearchParams(window.location.search)
+      newParams.delete('fromDate')
+      router.push(`/book?${newParams.toString()}`)
     }
   }, [date?.from, router])
 
@@ -76,6 +80,10 @@ export default function SearchState({
     if (date?.to) {
       const newParams = new URLSearchParams(window.location.search)
       newParams.set('toDate', formatToFr(date.to))
+      router.push(`/book?${newParams.toString()}`)
+    } else {
+      const newParams = new URLSearchParams(window.location.search)
+      newParams.delete('toDate')
       router.push(`/book?${newParams.toString()}`)
     }
   }, [date?.to, router])
