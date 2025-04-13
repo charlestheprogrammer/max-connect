@@ -1,3 +1,5 @@
+'use client'
+
 import React, { Fragment, useCallback } from 'react'
 import { AvailableJourney } from './journeys'
 import { differenceInHours, differenceInMinutes, format } from 'date-fns'
@@ -15,6 +17,8 @@ import Image from 'next/image'
 import { formatTripDate } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 import TrainStation from '@/app/api/models/train-station'
+import { Button } from '@/components/ui/button'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 export default function Journey({
   journey,
@@ -36,6 +40,15 @@ export default function Journey({
       )
     },
     [journey]
+  )
+
+  const searchParams = useSearchParams()
+
+  const router = useRouter()
+
+  const outbound = React.useMemo(
+    () => searchParams.get('outbound') === 'true',
+    [searchParams]
   )
 
   return (
@@ -107,7 +120,7 @@ export default function Journey({
         </div>
       </SheetTrigger>
       <SheetContent className="bg-[#F3F3F8] w-full sm:w-[540px] !max-w-full overflow-auto">
-        <SheetHeader>
+        <SheetHeader className="text-left">
           <SheetTitle>Votre voyage</SheetTitle>
           <p className="text-sm text-muted-foreground">
             Aller : {formatTripDate(journey[0].heure_depart)}
@@ -229,6 +242,19 @@ export default function Journey({
             </Fragment>
           ))}
         </div>
+        <Button
+          className="w-full mt-6 bg-[#14708a] hover:bg-[#006179] h-12"
+          onClick={() => {
+            if (outbound) {
+              return
+            }
+            const newParams = new URLSearchParams(window.location.search)
+            newParams.set('outbound', 'true')
+            router.push(`/book?${newParams.toString()}`)
+          }}
+        >
+          Choisir cet {outbound ? 'retour' : 'aller'}
+        </Button>
       </SheetContent>
     </Sheet>
   )
