@@ -93,9 +93,11 @@ export default function Journeys({
       })
     )
 
+    const outbound = searchParams.get('outbound') === 'true'
+
     const data = await fetchSncfData(
-      searchParams.get('from'),
-      searchParams.get('to'),
+      outbound ? searchParams.get('to') : searchParams.get('from'),
+      outbound ? searchParams.get('from') : searchParams.get('to'),
       new Date(date)
     ).catch(() => null)
 
@@ -160,8 +162,10 @@ export default function Journeys({
   }
 
   React.useEffect(() => {
-    if (searchParams.get('fromDate')) {
+    if (searchParams.get('fromDate') && !searchParams.get('outbound')) {
       getSearchResults(new Date(searchParams.get('fromDate') as string))
+    } else if (searchParams.get('toDate') && searchParams.get('outbound')) {
+      getSearchResults(new Date(searchParams.get('toDate') as string))
     }
   }, [searchParams])
 
