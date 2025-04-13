@@ -76,7 +76,6 @@ export default function SearchState({
     if (date?.to) {
       const newParams = new URLSearchParams(window.location.search)
       newParams.set('toDate', formatToFr(date.to))
-      newParams.delete('outbound')
       router.push(`/book?${newParams.toString()}`)
     }
   }, [date?.to, router])
