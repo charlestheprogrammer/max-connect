@@ -15,6 +15,16 @@ type TempJourney = {
   od_happy_card: string
 }
 
+function computeInternalId(journey: TempJourney) {
+  const date = new Date(journey.date)
+
+  return `${journey.origine_iata}-${
+    journey.destination_iata
+  }-${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${
+    journey.train_no
+  }-${journey.heure_depart}`
+}
+
 export const updateJourneys = async () => {
   await connect()
 
@@ -30,6 +40,8 @@ export const updateJourneys = async () => {
 
   await Journey.insertMany(
     journeys.map((journey: TempJourney) => {
+      const internal_id = computeInternalId(journey)
+
       const heure_depart = new Date(
         new Date(journey.date).toLocaleString('en-US', {
           timeZone: 'Europe/Paris',
@@ -39,7 +51,7 @@ export const updateJourneys = async () => {
         parseInt(journey.heure_depart.toString().split(':')[0]),
         parseInt(
           journey.heure_depart.toString().split(':')[
-        journey.heure_depart.toString().split(':').length - 1
+            journey.heure_depart.toString().split(':').length - 1
           ]
         )
       )
@@ -53,7 +65,7 @@ export const updateJourneys = async () => {
         parseInt(journey.heure_arrivee.toString().split(':')[0]),
         parseInt(
           journey.heure_arrivee.toString().split(':')[
-        journey.heure_arrivee.toString().split(':').length - 1
+            journey.heure_arrivee.toString().split(':').length - 1
           ]
         )
       )
@@ -70,6 +82,7 @@ export const updateJourneys = async () => {
         heure_arrivee: new Date(
           heure_arrivee.toISOString().replace('Z', '+02:00')
         ),
+        internal_id,
       }
     })
   )

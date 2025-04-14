@@ -16,6 +16,16 @@ type TempJourney = {
   od_happy_card: string
 }
 
+function computeInternalId(journey: TempJourney) {
+  const date = new Date(journey.date)
+
+  return `${journey.origine_iata}-${
+    journey.destination_iata
+  }-${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${
+    journey.train_no
+  }-${journey.heure_depart}`
+}
+
 export async function GET() {
   await connect()
 
@@ -31,6 +41,8 @@ export async function GET() {
 
   await Journey.insertMany(
     journeys.map((journey: TempJourney) => {
+      const internal_id = computeInternalId(journey)
+
       const heure_depart = new Date(
         new Date(journey.date).setHours(
           parseInt(journey.heure_depart.toString().split(':')[0]),
@@ -61,6 +73,7 @@ export async function GET() {
         ...journey,
         heure_depart: heure_depart,
         heure_arrivee: heure_arrivee,
+        internal_id,
       }
     })
   )

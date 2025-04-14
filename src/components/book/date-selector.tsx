@@ -66,7 +66,7 @@ export default function DateSelector({
               disabled={state.isLoading}
               aria-label={format(new Date(date), 'E dd', { locale: fr })}
               className={cn(
-                'p-2 rounded-lg flex-1 capitalize min-w-[80px] text-center min-h-[60px] relative',
+                'p-2 rounded-lg flex-1 capitalize min-w-[80px] md:min-w-[120px] text-center min-h-[60px] relative',
                 activeDate === date ? 'bg-[#14708a] text-white' : 'bg-white',
                 state.isLoading && 'opacity-70'
               )}
