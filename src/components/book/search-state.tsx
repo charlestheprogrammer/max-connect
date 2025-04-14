@@ -131,6 +131,9 @@ export default function SearchState({
                     const toDate = searchParams.get('toDate')
                       ? `&toDate=${searchParams.get('toDate')}`
                       : ''
+                    const beforeTo = to
+                    setTo(from)
+                    setFrom(beforeTo)
                     router.push(
                       `/book?from=${searchParams.get(
                         'to'
