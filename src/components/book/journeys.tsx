@@ -7,6 +7,8 @@ import Journey from './journey'
 import DateSelector from './date-selector'
 import { LoadingSpinner } from '../ui/loading-spinner'
 import TrainStation from '@/app/api/models/train-station'
+import { Button } from '../ui/button'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export type AvailableJourney = {
   train_no: string
@@ -72,7 +74,6 @@ export default function Journeys({
   } | null>(null)
   const searchParams = useSearchParams()
 
-  // Store both the journeys and loading state for each date
   const [dateStates, setDateStates] = React.useState<
     Map<
       string,
@@ -82,6 +83,9 @@ export default function Journeys({
       }
     >
   >(new Map())
+
+  const [canLoadPrevious, setCanLoadPrevious] = React.useState(true)
+  const [canLoadNext, setCanLoadNext] = React.useState(true)
 
   const [activeDate, setActiveDate] = React.useState<string | null>(null)
 
@@ -115,12 +119,15 @@ export default function Journeys({
     setData(null)
     const formattedCurrentDate = format(date, 'y-MM-dd')
 
-    // Calculate all dates to fetch upfront
     const datesToFetch = new Set<string>()
     for (let i = -3; i < 4; i++) {
-      // If the date is in the past, skip it and fetch a day in the future
       if (i < 0 && addDays(new Date(date), i) < new Date()) {
         datesToFetch.add(format(addDays(date, 3 + Math.abs(i)), 'y-MM-dd'))
+      } else if (
+        i > 0 &&
+        addDays(new Date(date), i) > addDays(new Date(), 31)
+      ) {
+        datesToFetch.add(format(subDays(date, 3 + i), 'y-MM-dd'))
       } else {
         datesToFetch.add(
           i < 0
@@ -130,7 +137,6 @@ export default function Journeys({
       }
     }
 
-    // Initialize all dates with loading state
     const initialStates = new Map<
       string,
       { journeys: AvailableJourney[][] | null; isLoading: boolean }
@@ -140,7 +146,6 @@ export default function Journeys({
     })
     setDateStates(initialStates)
 
-    // Fetch current date first
     const currentDateData = await fetchDateData(formattedCurrentDate)
     if (currentDateData) {
       setData({
@@ -150,7 +155,6 @@ export default function Journeys({
       setActiveDate(formattedCurrentDate)
     }
 
-    // Fetch other dates in parallel
     const otherDates = Array.from(datesToFetch).filter(
       (d) => d !== formattedCurrentDate
     )
@@ -159,6 +163,82 @@ export default function Journeys({
         .sort((a, b) => a.localeCompare(b))
         .map((day) => fetchDateData(day))
     )
+  }
+
+  React.useEffect(() => {
+    setCanLoadPrevious(true)
+    setCanLoadNext(true)
+  }, [searchParams])
+
+  const loadMoreDays = async (direction: 'previous' | 'next') => {
+    const currentDates = Array.from(dateStates.keys())
+    const referenceDate =
+      direction === 'previous'
+        ? subDays(
+            new Date(
+              Math.min(...currentDates.map((d) => new Date(d).getTime()))
+            ),
+            1
+          )
+        : addDays(
+            new Date(
+              Math.max(...currentDates.map((d) => new Date(d).getTime()))
+            ),
+            1
+          )
+
+    const diffInDaysBetweenNowAndReferenceDate =
+      Math.ceil(
+        (referenceDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+      ) + 1
+
+    const diffInDaysBetween31DaysAndReferenceDate = Math.ceil(
+      (addDays(new Date(), 31).getTime() - referenceDate.getTime()) /
+        (1000 * 60 * 60 * 24)
+    )
+
+    const maxDatesToFetch =
+      direction === 'previous'
+        ? diffInDaysBetweenNowAndReferenceDate > 3
+          ? 3
+          : Math.max(diffInDaysBetweenNowAndReferenceDate, 0)
+        : diffInDaysBetween31DaysAndReferenceDate > 3
+        ? 3
+        : Math.max(diffInDaysBetween31DaysAndReferenceDate, 0)
+
+    const canFetchMore = maxDatesToFetch === 3
+
+    if (direction === 'previous') {
+      setCanLoadPrevious(canFetchMore)
+    }
+    if (direction === 'next') {
+      setCanLoadNext(canFetchMore)
+    }
+
+    const newDates = []
+    for (let i = 0; i < maxDatesToFetch; i++) {
+      const newDate =
+        direction === 'previous'
+          ? subDays(referenceDate, i)
+          : addDays(referenceDate, i)
+      newDates.push(format(newDate, 'y-MM-dd'))
+    }
+
+    const datesToWait = []
+
+    for (const date of newDates) {
+      if (!dateStates.has(date)) {
+        datesToWait.push(fetchDateData(date))
+      }
+    }
+
+    const results = await Promise.all(datesToWait)
+
+    setActiveDate(newDates.at(-1)!)
+    setData({
+      count: results[results.length - 1]?.count || 0,
+      journeys: results[results.length - 1]?.journeys || [],
+    })
   }
 
   React.useEffect(() => {
@@ -179,6 +259,24 @@ export default function Journeys({
           setData={setData}
         />
       )}
+      <div className="flex justify-between my-4">
+        <Button
+          onClick={() => loadMoreDays('previous')}
+          className="bg-white text-black hover:bg-[#14708a] hover:text-white"
+          size="icon"
+          disabled={!canLoadPrevious}
+        >
+          <ChevronLeft />
+        </Button>
+        <Button
+          onClick={() => loadMoreDays('next')}
+          className="bg-white text-black hover:bg-[#14708a] hover:text-white"
+          size="icon"
+          disabled={!canLoadNext}
+        >
+          <ChevronRight />
+        </Button>
+      </div>
       {data ? (
         <div className="flex flex-col gap-2">
           {data.journeys?.map((journey, index) => (

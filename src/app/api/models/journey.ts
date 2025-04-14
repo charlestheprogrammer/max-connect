@@ -9,6 +9,7 @@ const journeySchema = new mongoose.Schema({
   date: Date,
   heure_depart: Date,
   heure_arrivee: Date,
+  internal_id: String,
 })
 
 type Journey = {
@@ -20,6 +21,7 @@ type Journey = {
   date: Date
   heure_depart: Date
   heure_arrivee: Date
+  internal_id: string
 }
 
 const Journey =
