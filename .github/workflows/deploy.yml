@@ -2,8 +2,12 @@ name: Deploy
 on:
   push:
     branches: main
+    paths:
+      - 'jobs/**'
   pull_request:
     branches: main
+    paths:
+      - 'jobs/**'
 
 jobs:
   deploy:
@@ -11,31 +15,23 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      id-token: write # Needed for auth with Deno Deploy
       contents: read # Needed to clone the repository
 
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
 
-      - name: Install Deno
-        uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
-
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
 
-      - name: Install step
-        run: "npm install"
+      - name: Install dependencies
+        run: npm install
 
-      - name: Upload to Deno Deploy
-        uses: denoland/deployctl@v1
+      - name: serverless deploy
+        uses: serverless/github-action@v3.2
         with:
-          project: "max-connect"
-          entrypoint: "index.ts"
-          root: "./jobs"
-          
-          
+          args: deploy
+        env:
+          SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}

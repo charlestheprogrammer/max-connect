@@ -6,8 +6,8 @@ export const connect = async () => {
   }
 
   // @ts-ignore
-  return mongoose.connect(Deno.env.get("MONGODB_URI")!, {
+  return mongoose.connect(process.env.MONGODB_URI!, {
     // @ts-ignore
-    dbName: Deno.env.get("MONGODB_DB"),
+    dbName: process.env.MONGODB_DB,
   })
 }

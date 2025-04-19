@@ -25,7 +25,7 @@ function computeInternalId(journey: TempJourney) {
   }-${journey.heure_depart}`
 }
 
-export const updateJourneys = async () => {
+module.exports.update = async () => {
   await connect()
 
   const journeysResponse = await fetch(
@@ -37,6 +37,8 @@ export const updateJourneys = async () => {
   )
 
   await Journey.deleteMany({})
+
+  console.log(`Adding ${journeys.length} journeys to the database`)
 
   await Journey.insertMany(
     journeys.map((journey: TempJourney) => {

@@ -178,7 +178,7 @@ const getNextWeekendRange = () => {
   return { from: nextFriday, to: nextSunday }
 }
 
-export const refreshTrips = async () => {
+module.exports.update = async () => {
   await connect()
   const trips = []
   setJourneys(await Journey.find({}))

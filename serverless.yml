@@ -1,0 +1,28 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: csimonmeunier
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: max-connect
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: max-connect-jobs
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: eu-west-1
+  timeout: 480
+
+functions:
+  updateJourneys:
+    handler: jobs/journeys.update
+    events:
+      - schedule: cron(50 4 * * ? *) # Every day at 4:50 AM UTC
+    environment:
+      MONGODB_URI: ${param:MONGODB_URI}
+      MONGODB_DB: ${param:MONGODB_DB}
+  updateTrips:
+    handler: jobs/trips.update
+    events:
+      - schedule: cron(0 5 * * ? *) # Every day at 5:00 AM UTC
+    environment:
+      MONGODB_URI: ${param:MONGODB_URI}
+      MONGODB_DB: ${param:MONGODB_DB}
