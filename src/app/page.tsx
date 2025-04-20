@@ -38,7 +38,7 @@ export default async function Home() {
         />
         <div className="absolute top-4 right-4 flex items-center">
           <Button variant="ghost" className="text-white">
-            <span>Voyages MAX</span>
+            <span>Mes alertes</span>
           </Button>
           <LoginButton session={session} />
         </div>
@@ -57,7 +57,7 @@ export default async function Home() {
           </div>
           <TripSuggester trainStations={data} />
         </div>
-        <Trips trainStations={data} />
+        <Trips trainStations={data} session={session} />
       </div>
     </div>
   )
