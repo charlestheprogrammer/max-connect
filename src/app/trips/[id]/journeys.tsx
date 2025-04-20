@@ -27,7 +27,16 @@ export default async function Journeys({
         return Promise.all(
           tripArray.map(async (journeyId) => {
             const journey = await JourneyModel.findById(journeyId)
-            return journey
+            return {
+              train_no: journey?.train_no,
+              origine: journey?.origine,
+              destination: journey?.destination,
+              destination_iata: journey?.destination_iata,
+              origine_iata: journey?.origine_iata,
+              date: journey?.date,
+              heure_depart: journey?.heure_depart,
+              heure_arrivee: journey?.heure_arrivee,
+            }
           })
         )
       })
@@ -39,11 +48,7 @@ export default async function Journeys({
       {populatedTrips.map(
         (tripArray, index) =>
           tripArray[0] != null && (
-            <Journey
-              key={index}
-              journey={tripArray as AvailableJourney[]}
-              data={trainStations}
-            />
+            <Journey key={index} journey={tripArray} data={trainStations} />
           )
       )}
     </div>

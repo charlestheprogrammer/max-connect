@@ -4,7 +4,7 @@ import React, { Fragment, useCallback } from 'react'
 import { AvailableJourney } from './journeys'
 import { differenceInHours, differenceInMinutes, format } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { Clock } from 'lucide-react'
+import { ChevronRight, Clock } from 'lucide-react'
 
 import {
   Sheet,
@@ -19,6 +19,7 @@ import { Separator } from '@/components/ui/separator'
 import TrainStation from '@/app/api/models/train-station'
 import { Button } from '@/components/ui/button'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
 export default function Journey({
   journey,
@@ -175,72 +176,91 @@ export default function Journey({
         </SheetHeader>
         <h2 className="font-semibold text-lg mt-6">Détail du voyage</h2>
         <div className="bg-white w-full rounded-lg px-8 py-6 mt-2 flex flex-col">
-          {journey.map((record, index) => (
-            <Fragment key={`${index}`}>
-              {index !== 0 && (
-                <div className="flex flex-row gap-2 items-stretch h-[80px]">
+          {journey.map((record, index) => {
+            const dateSearch = format(
+              record.heure_depart,
+              "dd/MM/yyyy' à 'HH:mm",
+              { locale: fr }
+            )
+
+            return (
+              <Fragment key={`${index}`}>
+                {index !== 0 && (
+                  <div className="flex flex-row gap-2 items-stretch h-[80px]">
+                    <div className="flex flex-col justify-center items-end relative w-[60px] pr-[25px]">
+                      <div className="w-[14px] bg-[#e3e3e8] absolute h-[calc(100%+30px)] right-[5px] rounded-full flex flex-col justify-between"></div>
+                      <span className="text-sm text-muted-foreground">
+                        {totalTime(
+                          journey[index - 1].heure_arrivee,
+                          record.heure_depart
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex-1 flex flex-col justify-center">
+                      <p className="text-muted-foreground">Correspondance</p>
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-row gap-2 items-stretch z-10">
                   <div className="flex flex-col justify-center items-end relative w-[60px] pr-[25px]">
-                    <div className="w-[14px] bg-[#e3e3e8] absolute h-[calc(100%+30px)] right-[5px] rounded-full flex flex-col justify-between"></div>
+                    <div className="w-[14px] bg-[#14708a] absolute h-[calc(100%-10px)] right-[5px] rounded-full flex flex-col justify-between">
+                      <div className="w-[14px] bg-white h-[14px] rounded-full border-2 border-[#14708a]"></div>
+                      <div className="w-[14px] bg-white h-[14px] rounded-full border-2 border-[#14708a]"></div>
+                    </div>
                     <span className="text-sm text-muted-foreground">
-                      {totalTime(
-                        journey[index - 1].heure_arrivee,
-                        record.heure_depart
-                      )}
+                      {totalTime(record.heure_depart, record.heure_arrivee)}
                     </span>
                   </div>
-                  <div className="flex-1 flex flex-col justify-center">
-                    <p className="text-muted-foreground">Correspondance</p>
-                  </div>
-                </div>
-              )}
-              <div className="flex flex-row gap-2 items-stretch z-10">
-                <div className="flex flex-col justify-center items-end relative w-[60px] pr-[25px]">
-                  <div className="w-[14px] bg-[#14708a] absolute h-[calc(100%-10px)] right-[5px] rounded-full flex flex-col justify-between">
-                    <div className="w-[14px] bg-white h-[14px] rounded-full border-2 border-[#14708a]"></div>
-                    <div className="w-[14px] bg-white h-[14px] rounded-full border-2 border-[#14708a]"></div>
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    {totalTime(record.heure_depart, record.heure_arrivee)}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium capitalize">
-                    {format(record.heure_depart, 'HH:mm', { locale: fr })}{' '}
-                    {data
-                      ?.find((d) => d.iata === record.origine_iata)
-                      ?.name.toLowerCase() || record.origine.toLowerCase()}
-                  </p>
-                  <div className="bg-[#f3f3f8] p-3 rounded-lg my-4">
-                    <div className="flex justify-between items-center">
-                      <Image
-                        src="/book/train.svg"
-                        alt="train"
-                        width={35}
-                        height={35}
-                        className="opacity-50"
-                      />
-                      <Image
-                        src="/book/inoui.svg"
-                        alt="train"
-                        width={50}
-                        height={50}
-                      />
+                  <div className="flex-1">
+                    <p className="font-medium capitalize">
+                      {format(record.heure_depart, 'HH:mm', { locale: fr })}{' '}
+                      {data
+                        ?.find((d) => d.iata === record.origine_iata)
+                        ?.name.toLowerCase() || record.origine.toLowerCase()}
+                    </p>
+                    <div className="bg-[#f3f3f8] p-3 rounded-lg my-4">
+                      <div className="flex justify-between items-center">
+                        <Image
+                          src="/book/train.svg"
+                          alt="train"
+                          width={35}
+                          height={35}
+                          className="opacity-50"
+                        />
+                        <Image
+                          src="/book/inoui.svg"
+                          alt="train"
+                          width={50}
+                          height={50}
+                        />
+                      </div>
+                      <p className="mt-1">
+                        TGV INOUI{' '}
+                        <span className="font-medium">
+                          n° {record.train_no}
+                        </span>
+                      </p>
+                      <Link
+                        href={`https://www.sncf-connect.com/app/home/search?userInput=${record.origine}+${record.destination}+${dateSearch}&utm_source=max-connect.vercel.app`}
+                        target="_blank"
+                      >
+                        <span className="text-sm font-medium text-[#14708a] flex items-center gap-1 mt-2">
+                          <ChevronRight size={18} /> Voir sur SNCF Connect
+                        </span>
+                      </Link>
                     </div>
-                    <p className="mt-1">
-                      TGV INOUI{' '}
-                      <span className="font-medium">n° {record.train_no}</span>
+                    <p className="font-medium capitalize">
+                      {format(record.heure_arrivee, 'HH:mm', { locale: fr })}{' '}
+                      {data
+                        ?.find((d) => d.iata === record.destination_iata)
+                        ?.name.toLowerCase() ||
+                        record.destination.toLowerCase()}
                     </p>
                   </div>
-                  <p className="font-medium capitalize">
-                    {format(record.heure_arrivee, 'HH:mm', { locale: fr })}{' '}
-                    {data
-                      ?.find((d) => d.iata === record.destination_iata)
-                      ?.name.toLowerCase() || record.destination.toLowerCase()}
-                  </p>
                 </div>
-              </div>
-            </Fragment>
-          ))}
+              </Fragment>
+            )
+          })}
         </div>
         <Button
           className="w-full mt-6 bg-[#14708a] hover:bg-[#006179] h-12"
