@@ -4,6 +4,7 @@ import TrainStation from '@/app/api/models/train-station'
 import { ScrollArea } from '../ui/scroll-area'
 import { Separator } from '../ui/separator'
 import { cn } from '@/lib/utils'
+import { Input } from '../ui/input'
 
 const computeAvailableStations = (
   value: string,
@@ -25,6 +26,7 @@ export default function SearchBarButton({
   setTrainStation,
   trainStations,
   inline = false,
+  inputOnly = false,
 }: {
   type: string
   id: string
@@ -33,6 +35,7 @@ export default function SearchBarButton({
   setTrainStation: (value: TrainStation | null) => void
   trainStations: TrainStation[]
   inline?: boolean
+  inputOnly?: boolean
 }) {
   const [availableStations, setAvailableStations] = React.useState<
     TrainStation[]
@@ -47,17 +50,21 @@ export default function SearchBarButton({
   return (
     <Label
       htmlFor={id}
-      className="flex flex-col relative w-full md:w-auto md:h-full flex-1"
+      className={cn(
+        'flex flex-col relative md:h-full flex-1',
+        inputOnly && 'w-full',
+        !inputOnly && 'w-full md:w-auto'
+      )}
     >
       <div
         className={cn(
-          'flex items-start transition-colors rounded-md p-2 cursor-pointer h-full',
-          !inline &&
-            'hover:bg-accent hover:text-accent-foreground flex-col justify-center ',
-          inline && 'flex-1 flex items-center px-3 gap-1 w-full'
+          'flex items-start transition-colors rounded-md cursor-pointer h-full',
+          !inline && 'flex-col justify-center ',
+          inline && 'flex-1 flex items-center px-3 gap-1 w-full',
+          !inputOnly && 'hover:bg-accent hover:text-accent-foreground p-2'
         )}
       >
-        {(value || inline) && (
+        {(value || inline) && !inputOnly && (
           <span
             className={cn(
               'text-muted-foreground text-base',
@@ -73,13 +80,14 @@ export default function SearchBarButton({
             !inline && 'text-sm w-full'
           )}
         >
-          <input
+          <Input
             type="text"
             id={id}
             placeholder={type}
             className={cn(
               'outline-none bg-transparent font-normal w-full text-base',
-              !inline && 'text-sm'
+              !inline && 'text-sm',
+              !inputOnly && 'border-none shadow-none focus-visible:ring-0'
             )}
             value={value}
             onChange={(e) => {
@@ -102,7 +110,12 @@ export default function SearchBarButton({
         </span>
       </div>
       {availableStations.length > 0 && isFocus && (
-        <div className={cn('absolute', inline ? 'top-[48px]' : 'top-[60px]')}>
+        <div
+          className={cn(
+            'absolute',
+            inline ? 'top-[48px]' : inputOnly ? 'top-[30px]' : 'top-[60px]'
+          )}
+        >
           <ScrollArea className="h-72 w-72 rounded-md border absolute bg-white shadow-lg z-10">
             <div className="p-2 py-4">
               <h4 className="mb-4 text-sm font-medium leading-none">

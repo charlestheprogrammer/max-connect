@@ -6,10 +6,15 @@ import Trips from '@/components/home/trips'
 import TripSuggester from '@/components/home/trip-suggester'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { Toaster } from '@/components/ui/sonner'
+import LoginButton from '@/components/login-button'
+import { auth } from '@/auth'
+import { Button } from '@/components/ui/button'
 
 export default async function Home() {
   const supabase = await createClient()
   const { data } = await supabase.from('train-station').select()
+
+  const session = await auth()
 
   if (!data) {
     return (
@@ -31,6 +36,12 @@ export default async function Home() {
           height={64}
           priority
         />
+        <div className="absolute top-4 right-4 flex items-center">
+          <Button variant="ghost" className="text-white">
+            <span>Mes alertes</span>
+          </Button>
+          <LoginButton session={session} />
+        </div>
         <SearchBar trainStations={data} className="translate-y-1/2" />
       </main>
       <div className="w-11/12 max-w-[1000px] mx-auto p-4 mt-[200px] md:mt-[150px]">
@@ -46,7 +57,7 @@ export default async function Home() {
           </div>
           <TripSuggester trainStations={data} />
         </div>
-        <Trips trainStations={data} />
+        <Trips trainStations={data} session={session} />
       </div>
     </div>
   )
