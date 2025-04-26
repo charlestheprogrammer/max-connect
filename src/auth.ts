@@ -36,5 +36,17 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
       return true // Allow sign-in
     },
+    session: async ({ session }) => {
+      if (session.user) {
+        await connect()
+        const userEnriched = await User.findOne<User>({
+          email: session.user.email,
+        }).exec()
+        session.user.preferences = userEnriched?.preferences
+        session.user.profilePicture = userEnriched?.profilePicture
+        session.user._id = userEnriched?._id
+      }
+      return session
+    },
   },
 })

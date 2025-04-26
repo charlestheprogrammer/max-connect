@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema({
 })
 
 type User = {
+  _id?: string
   name: string
   email: {
     type: string

@@ -1,12 +1,7 @@
 import type { Metadata } from 'next'
-// import { Nunito_Sans } from 'next/font/google'
 import './globals.css'
 import { SearchProvider } from '@/context/search'
-
-// const nunitoSans = Nunito_Sans({
-//   variable: '--font-nunito-sans',
-//   subsets: ['latin'],
-// })
+import { SessionProvider } from 'next-auth/react'
 
 export const metadata: Metadata = {
   title: 'MAX Connect : Rentabilisez votre abonnement SNCF TGV MAX !',
@@ -22,7 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased bg-[#F3F3F8]`}>
-        <SearchProvider>{children}</SearchProvider>
+        <SessionProvider>
+          <SearchProvider>{children}</SearchProvider>
+        </SessionProvider>
       </body>
     </html>
   )
