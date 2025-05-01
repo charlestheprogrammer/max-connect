@@ -20,13 +20,14 @@ import {
 import { PopoverClose } from '@radix-ui/react-popover'
 import { toast } from 'sonner'
 import SearchBarButton from '../search/search-bar-button'
-import type { User } from '@/app/api/models/user'
+import { useSession } from 'next-auth/react'
 
 export default function TripPreferences({
   trainStations,
 }: {
   trainStations: TrainStation[]
 }) {
+  const { status, data } = useSession()
   const [selectedOrigin, setSelectedOrigin] = React.useState<string>('')
   const [value, setValue] = React.useState<string>('')
   const [selectedWeekendStart, setSelectedWeekendStart] =
@@ -34,19 +35,17 @@ export default function TripPreferences({
   const [selectedWeekendEnd, setSelectedWeekendEnd] = React.useState<number>(0)
 
   React.useEffect(() => {
-    fetch('/api/users')
-      .then((res) => res.json())
-      .then((data: User) => {
-        setSelectedOrigin(data.preferences?.favoriteOrigine ?? '')
-        setValue(
-          trainStations.find(
-            (v) => v.iata === data.preferences?.favoriteOrigine
-          )?.name ?? ''
-        )
-        setSelectedWeekendStart(data.preferences?.weekendStartingDay ?? 5)
-        setSelectedWeekendEnd(data.preferences?.weekendEndingDay ?? 6)
-      })
-  }, [])
+    if (status === 'authenticated') {
+      setSelectedOrigin(data.user.preferences?.favoriteOrigine ?? '')
+      setValue(
+        trainStations.find(
+          (v) => v.iata === data.user.preferences?.favoriteOrigine
+        )?.name ?? ''
+      )
+      setSelectedWeekendStart(data.user.preferences?.weekendStartingDay ?? 5)
+      setSelectedWeekendEnd(data.user.preferences?.weekendEndingDay ?? 6)
+    }
+  }, [data, status])
 
   const handleUpdatePreferences = () => {
     // Handle the update preferences logic here
@@ -81,6 +80,16 @@ export default function TripPreferences({
       },
       error: "Une erreur s'est produite lors de la mise à jour des préférences",
     })
+  }
+
+  if (status === 'loading') {
+    return (
+      <div className="h-12 w-12 border border-[#0C131F] rounded-full animate-pulse" />
+    )
+  }
+
+  if (status === 'unauthenticated') {
+    return null
   }
 
   return (

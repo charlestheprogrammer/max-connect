@@ -4,7 +4,6 @@ import TrainStation from '@/app/api/models/train-station'
 import { ScrollArea } from '../ui/scroll-area'
 import { Separator } from '../ui/separator'
 import { cn } from '@/lib/utils'
-import { Input } from '../ui/input'
 
 const computeAvailableStations = (
   value: string,
@@ -61,7 +60,9 @@ export default function SearchBarButton({
           'flex items-start transition-colors rounded-md cursor-pointer h-full',
           !inline && 'flex-col justify-center ',
           inline && 'flex-1 flex items-center px-3 gap-1 w-full',
-          !inputOnly && 'hover:bg-accent hover:text-accent-foreground p-2'
+          !inputOnly &&
+            !inline &&
+            'hover:bg-accent hover:text-accent-foreground p-2'
         )}
       >
         {(value || inline) && !inputOnly && (
@@ -80,14 +81,15 @@ export default function SearchBarButton({
             !inline && 'text-sm w-full'
           )}
         >
-          <Input
+          <input
             type="text"
             id={id}
             placeholder={type}
             className={cn(
               'outline-none bg-transparent font-normal w-full text-base',
               !inline && 'text-sm',
-              !inputOnly && 'border-none shadow-none focus-visible:ring-0'
+              !inputOnly && 'border-none shadow-none focus-visible:ring-0',
+              inputOnly && 'border border-input rounded-md p-2 shadow-sm',
             )}
             value={value}
             onChange={(e) => {

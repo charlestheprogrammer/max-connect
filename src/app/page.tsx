@@ -9,6 +9,8 @@ import { Toaster } from '@/components/ui/sonner'
 import LoginButton from '@/components/login-button'
 import { auth } from '@/auth'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import Alerts from '@/components/home/alerts'
 
 export default async function Home() {
   const supabase = await createClient()
@@ -37,15 +39,22 @@ export default async function Home() {
           priority
         />
         <div className="absolute top-4 right-4 flex items-center">
-          <Button variant="ghost" className="text-white">
-            <span>Mes alertes</span>
-          </Button>
+          {session && (
+            <Link href="/alerts">
+              <Button variant="ghost" className="text-white">
+                <span>Mes alertes</span>
+              </Button>
+            </Link>
+          )}
           <LoginButton session={session} />
         </div>
         <SearchBar trainStations={data} className="translate-y-1/2" />
       </main>
-      <div className="w-11/12 max-w-[1000px] mx-auto p-4 mt-[200px] md:mt-[150px]">
-        <div className="flex justify-between flex-col gap-4 sm:gap-0 sm:flex-row items-center">
+      <div className="w-11/12 max-w-[1000px] mx-auto p-4">
+        <div className="overflow-x-auto flex flex-row gap-4 no-scrollbar mt-[120px] md:mt-[50px] py-4">
+          <Alerts data={data} />
+        </div>
+        <div className="flex justify-between flex-col gap-4 sm:gap-0 sm:flex-row items-center mt-[70px] md:mt-[90px]">
           <div className="flex flex-col gap-4">
             <span className="bg-[#F1C83C] text-[#0C131F] text-sm font-medium size-fit px-3 py-1 rounded-full">
               Dernière minute

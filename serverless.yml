@@ -26,3 +26,12 @@ functions:
     environment:
       MONGODB_URI: ${param:MONGODB_URI}
       MONGODB_DB: ${param:MONGODB_DB}
+  handleAlerts:
+    handler: jobs/alerts.handle
+    events:
+      - schedule: cron(0 6 * * ? *) # Every day at 6:00 AM UTC
+    environment:
+      MONGODB_URI: ${param:MONGODB_URI}
+      MONGODB_DB: ${param:MONGODB_DB}
+      MAILJET_API_KEY: ${param:MAILJET_API_KEY}
+      MAILJET_API_SECRET: ${param:MAILJET_API_SECRET}

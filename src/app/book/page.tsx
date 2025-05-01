@@ -1,5 +1,6 @@
 import Journeys from '@/components/book/journeys'
 import SearchState from '@/components/book/search-state'
+import { Toaster } from '@/components/ui/sonner'
 import { createClient } from '@/utils/server/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -15,6 +16,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen font-[family-name:var(--font-nunito-sans)] bg-[#F3F3F8]">
+      <Toaster />
       <main className="flex flex-col items-center justify-end bg-[#0C131F] h-[250px] md:h-[210px] p-4 sticky top-0 z-10">
         <Link href={'/'}>
           <Image

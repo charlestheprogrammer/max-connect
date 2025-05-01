@@ -9,6 +9,7 @@ import { LoadingSpinner } from '../ui/loading-spinner'
 import TrainStation from '@/app/api/models/train-station'
 import { Button } from '../ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { toast } from 'sonner'
 
 export type AvailableJourney = {
   train_no: string
@@ -249,6 +250,45 @@ export default function Journeys({
     }
   }, [searchParams])
 
+  const createAlert = async () => {
+    const patchPreferences = new Promise<void>((resolve, reject) => {
+      fetch('/api/alerts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          date: activeDate,
+          origine: searchParams.get('from'),
+          destination: searchParams.get('to'),
+        }),
+      })
+        .then((res) => {
+          if (res.ok) {
+            resolve()
+          } else {
+            reject(res.status)
+          }
+        })
+        .catch((err) => {
+          reject(err)
+        })
+    })
+
+    toast.promise(patchPreferences, {
+      loading: "Création de l'alerte...",
+      success: () => {
+        return `Alerte créée avec succès`
+      },
+      error: (error) => {
+        if (error === 401) {
+          return 'Vous devez être connecté pour créer une alerte'
+        }
+        return "Une erreur s'est produite lors de la création de l'alerte"
+      },
+    })
+  }
+
   return (
     <div>
       {dateStates.size > 0 && (
@@ -298,6 +338,8 @@ export default function Journeys({
           {data.journeys.length === 0 && (
             <p className="text-center text-muted-foreground">
               Aucun train disponible
+              <br />
+              <Button onClick={createAlert}>Créer une alerte</Button>
             </p>
           )}
         </div>
