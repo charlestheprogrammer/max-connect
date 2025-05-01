@@ -55,13 +55,13 @@ export default function AlertSmall({
               <div className="text-sm font-medium overflow-hidden text-nowrap flex gap-1">
                 <p className="max-w-[100px] overflow-hidden text-ellipsis">
                   {
-                    trainStations.find((v) => v.iata === alert.destination)
+                    trainStations.find((v) => v.iata === alert.origine)
                       ?.name
                   }
                 </p>
                 {' • '}
                 <p className="max-w-[100px] overflow-hidden text-ellipsis">
-                  {trainStations.find((v) => v.iata === alert.origine)?.name}
+                  {trainStations.find((v) => v.iata === alert.destination)?.name}
                 </p>
               </div>
             </div>

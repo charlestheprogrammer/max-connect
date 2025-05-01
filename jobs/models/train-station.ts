@@ -8,7 +8,6 @@ const trainStationSchema = new mongoose.Schema({
 
 type TrainStation = {
   _id?: string
-  id?: string
   iata: string
   name: string
 }
@@ -17,4 +16,4 @@ const TrainStation =
   mongoose.models.TrainStation ||
   mongoose.model('TrainStation', trainStationSchema)
 
-export default TrainStation
+export { TrainStation }

@@ -33,6 +33,7 @@
     "next": "^15.3.0",
     "next-auth": "^5.0.0-beta.25",
     "next-themes": "^0.4.6",
+    "node-mailjet": "^6.0.8",
     "ora-classic": "^5.4.2",
     "react": "^18.2.0",
     "react-day-picker": "^8.10.1",

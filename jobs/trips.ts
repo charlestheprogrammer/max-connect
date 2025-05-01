@@ -116,7 +116,7 @@ const destinationsFrom = async (
   return results
 }
 
-const canGoFromTo = async (
+export const canGoFromTo = async (
   from: string,
   to: string,
   date: Date,
