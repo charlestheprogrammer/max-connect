@@ -6,9 +6,10 @@ import Alert from './models/alert.ts'
 import User from './models/user.ts'
 // @ts-ignore
 import Mailjet from 'node-mailjet'
-import { canGoFromTo } from './trips.js'
+import { canGoFromTo, setJourneys } from './trips.js'
 import mongoose from 'mongoose'
 import { TrainStation } from './models/train-station.js'
+import Journey from './models/journey.js'
 
 const handleAlerts = async () => {
   await connect()
@@ -43,18 +44,31 @@ const handleAlerts = async () => {
 
   const mailjet = Mailjet.apiConnect(
     process.env.MAILJET_API_KEY || '',
-    process.env.MAILJET_SECRET_KEY || ''
+    process.env.MAILJET_API_SECRET || ''
   )
 
   const promises = []
   const messages: any[] = []
   const alertsToDelete: mongoose.Types.ObjectId[] = []
 
+  setJourneys(await Journey.find({}))
+
   for (const user_alerts of alerts) {
     for (const alert of user_alerts.alerts) {
       promises.push(
         canGoFromTo(alert.origine, alert.destination, alert.date).then(
           (result) => {
+            console.log(
+              `Alert for ${user_alerts.user.name} (${
+                user_alerts.user.email
+              }) from ${alert.origine} to ${
+                alert.destination
+              } on ${alert.date.toLocaleDateString(
+                'fr-FR'
+              )} at ${alert.date.toLocaleTimeString('fr-FR')} canGo: ${
+                result.canGo
+              }`
+            )
             alert.canGo = result.canGo
 
             if (result.canGo) {
@@ -116,6 +130,11 @@ const handleAlerts = async () => {
     $or: [{ date: { $lt: now } }, { _id: { $in: alertsToDelete } }],
   })
 
+  if (messages.length === 0) {
+    console.log('No alerts to send')
+    return
+  }
+
   const request = mailjet.post('send', { version: 'v3.1' }).request({
     Messages: messages,
   })
@@ -124,7 +143,7 @@ const handleAlerts = async () => {
       console.log(result.body)
     })
     .catch((err) => {
-      console.log(err.statusCode)
+      console.log(err)
     })
 }
 

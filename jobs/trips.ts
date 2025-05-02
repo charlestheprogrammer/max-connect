@@ -200,7 +200,7 @@ module.exports.update = async () => {
 
 let journeys: Journey[] = []
 
-const setJourneys = (newJourneys: Journey[]) => {
+export const setJourneys = (newJourneys: Journey[]) => {
   journeys = newJourneys
 }
 
